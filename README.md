@@ -27,3 +27,9 @@ Deployment preparation for a self-hosted Docker server is documented in [docs/DE
 ## Contributing
 
 We welcome contributions from RVCE Coding Club members and juniors! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on our workflow, issue allotment, and submission process.
+
+
+
+
+
+
