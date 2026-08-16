@@ -8,10 +8,11 @@ Welcome to the **RVCE Events** platform repository! This project is maintained a
 1. [Code of Conduct & Etiquette](#-code-of-conduct--etiquette)
 2. [Contribution Workflow](#-contribution-workflow)
 3. [Requesting Issue Allotment](#-requesting-issue-allotment)
-4. [Local Development Setup](#-local-development-setup)
-5. [Git & Commit Guidelines](#-git--commit-guidelines)
-6. [Submitting a Pull Request](#-submitting-a-pull-request)
-7. [CI/CD & Live Staging Previews](#-cicd--live-staging-previews)
+4. [Issue Assignment & Inactivity Policy](#-issue-assignment--inactivity-policy)
+5. [Local Development Setup](#-local-development-setup)
+6. [Git & Commit Guidelines](#-git--commit-guidelines)
+7. [Submitting a Pull Request](#-submitting-a-pull-request)
+8. [CI/CD & Live Staging Previews](#-cicd--live-staging-previews)
 
 ---
 
@@ -49,6 +50,16 @@ graph TD
 4. Leave a comment expressing your interest:
    > *"Hi! I'd like to work on this issue. Could you please assign it to me?"*
 5. Once a maintainer assigns you to the issue, you're ready to start coding!
+
+---
+
+## ⏱️ Issue Assignment & Inactivity Policy
+
+To ensure tickets do not remain stalled and everyone in the community gets an opportunity to contribute, the repository enforces an automated inactivity lifecycle:
+
+- **Day 3 (Inactivity Warning)**: If an assigned issue has no activity (comments, progress updates, or PR links) for **3 days**, GitHub Actions automatically leaves a comment pinging the assignee and adds the `stale-assignment` label.
+- **Day 5 (Graceful Unassignment)**: If no response or activity occurs for **2 more days** (5 days total inactivity), the workflow automatically unassigns the issue and removes the `stale-assignment` label so other contributors can pick it up.
+- **Keeping your ticket active**: Simply leave a comment on the issue with a progress update, ask for help, or link a draft PR. Any activity automatically resets the timer and clears the `stale-assignment` label!
 
 ---
 

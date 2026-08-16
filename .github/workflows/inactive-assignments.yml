@@ -1,0 +1,225 @@
+name: Inactive Issue Assignment Management
+
+on:
+  schedule:
+    # Run every day at 00:00 UTC (05:30 AM IST)
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (log actions without modifying issues)'
+        type: boolean
+        default: false
+        required: false
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  manage-assignments:
+    name: Check Inactive Assignments
+    runs-on: ubuntu-latest
+    steps:
+      - name: Process Inactive Issue Assignments
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const dryRun = context.payload?.inputs?.dry_run === true || context.payload?.inputs?.dry_run === 'true';
+
+            const STALE_LABEL = 'stale-assignment';
+            const EXEMPT_LABELS = ['blocked', 'pinned', 'on-hold', 'in-progress'];
+            const WARN_DAYS = 3;
+            const UNASSIGN_DAYS = 5;
+            const WARNING_MARKER = '<!-- inactive-assignment-warning -->';
+
+            console.log(`Starting inactive assignment check for ${owner}/${repo} (dry_run: ${dryRun})`);
+
+            // 1. Fetch all open issues in the repository
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            console.log(`Found ${issues.length} total open issues.`);
+
+            for (const issue of issues) {
+              // Ignore pull requests
+              if (issue.pull_request) continue;
+
+              // Ignore unassigned issues
+              if (!issue.assignees || issue.assignees.length === 0) continue;
+
+              const issueLabels = issue.labels.map(l => (typeof l === 'string' ? l : l.name));
+              
+              // Skip issues with exempt labels
+              const isExempt = issueLabels.some(l => EXEMPT_LABELS.includes(l.toLowerCase()));
+              if (isExempt) {
+                console.log(`Issue #${issue.number} is exempt due to label match. Skipping.`);
+                continue;
+              }
+
+              const hasStaleLabel = issueLabels.includes(STALE_LABEL);
+              const assigneeLogins = issue.assignees.map(a => a.login);
+              const assigneeMentions = assigneeLogins.map(login => `@${login}`).join(' ');
+
+              // 2. Fetch comments and timeline events for the issue
+              const [comments, events] = await Promise.all([
+                github.paginate(github.rest.issues.listComments, {
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  per_page: 100
+                }),
+                github.paginate(github.rest.issues.listEvents, {
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  per_page: 100
+                })
+              ]);
+
+              // Find the most recent 'assigned' event for any current assignee
+              let lastAssignedTime = new Date(issue.created_at).getTime();
+              for (const event of events) {
+                if (event.event === 'assigned' && assigneeLogins.includes(event.assignee?.login)) {
+                  const eventTime = new Date(event.created_at).getTime();
+                  if (eventTime > lastAssignedTime) {
+                    lastAssignedTime = eventTime;
+                  }
+                }
+              }
+
+              // Find warning comment and user comments
+              let lastWarningCommentTime = 0;
+              let lastUserActivityTime = lastAssignedTime;
+
+              for (const comment of comments) {
+                const commentTime = new Date(comment.created_at).getTime();
+                const isBotWarning = comment.body && comment.body.includes(WARNING_MARKER);
+
+                if (isBotWarning) {
+                  if (commentTime > lastWarningCommentTime) {
+                    lastWarningCommentTime = commentTime;
+                  }
+                } else {
+                  // Count comments made after assignment as user activity
+                  if (commentTime >= lastAssignedTime && commentTime > lastUserActivityTime) {
+                    lastUserActivityTime = commentTime;
+                  }
+                }
+              }
+
+              const now = Date.now();
+              const msPerDay = 24 * 60 * 60 * 1000;
+              const daysSinceActivity = (now - lastUserActivityTime) / msPerDay;
+
+              console.log(`Issue #${issue.number} (${assigneeLogins.join(', ')}): daysSinceActivity = ${daysSinceActivity.toFixed(2)}, hasStaleLabel = ${hasStaleLabel}`);
+
+              // Case 1: Issue has stale label, but user was active after the warning was posted
+              if (hasStaleLabel && lastUserActivityTime > lastWarningCommentTime && lastWarningCommentTime > 0) {
+                console.log(`Issue #${issue.number}: Activity detected after warning. Removing '${STALE_LABEL}' label.`);
+                if (!dryRun) {
+                  try {
+                    await github.rest.issues.removeLabel({
+                      owner,
+                      repo,
+                      issue_number: issue.number,
+                      name: STALE_LABEL
+                    });
+                  } catch (err) {
+                    console.error(`Failed to remove label from #${issue.number}:`, err.message);
+                  }
+                }
+                continue;
+              }
+
+              // Case 2: 5 or more days of inactivity (or >= 2 days after warning) -> Unassign gracefully
+              if (hasStaleLabel && (daysSinceActivity >= UNASSIGN_DAYS || (lastWarningCommentTime > 0 && (now - lastWarningCommentTime) >= 2 * msPerDay))) {
+                console.log(`Issue #${issue.number}: Inactive for >= 5 days (or >= 2 days post-warning). Unassigning assignees.`);
+                const unassignComment = [
+                  `Hi ${assigneeMentions}! 👋`,
+                  ``,
+                  `This issue is being automatically unassigned due to **5 days of inactivity** so that other contributors from the community can pick it up.`,
+                  ``,
+                  `Thank you for your interest! You are more than welcome to request assignment again when you have bandwidth or explore other open issues in the repository. 🚀`
+                ].join('\n');
+
+                if (!dryRun) {
+                  try {
+                    // Post graceful unassignment comment
+                    await github.rest.issues.createComment({
+                      owner,
+                      repo,
+                      issue_number: issue.number,
+                      body: unassignComment
+                    });
+
+                    // Remove assignees
+                    await github.rest.issues.removeAssignees({
+                      owner,
+                      repo,
+                      issue_number: issue.number,
+                      assignees: assigneeLogins
+                    });
+
+                    // Remove stale label
+                    await github.rest.issues.removeLabel({
+                      owner,
+                      repo,
+                      issue_number: issue.number,
+                      name: STALE_LABEL
+                    });
+                    console.log(`Successfully unassigned #${issue.number}`);
+                  } catch (err) {
+                    console.error(`Error unassigning issue #${issue.number}:`, err.message);
+                  }
+                }
+                continue;
+              }
+
+              // Case 3: 3 or more days of inactivity without stale label -> Post warning comment
+              if (!hasStaleLabel && daysSinceActivity >= WARN_DAYS) {
+                console.log(`Issue #${issue.number}: Inactive for >= 3 days. Adding warning comment and '${STALE_LABEL}' label.`);
+                const warnComment = [
+                  `${WARNING_MARKER}`,
+                  `Hi ${assigneeMentions}! 👋`,
+                  ``,
+                  `There hasn't been any activity on this issue for **3 days**.`,
+                  ``,
+                  `Please post an update or let us know your progress on this task. If there is no activity within the next **2 days** (5 days total), this issue will be automatically unassigned and made available for other contributors to pick up.`,
+                  ``,
+                  `If you need any guidance or have questions, feel free to ask here! 🙌`
+                ].join('\n');
+
+                if (!dryRun) {
+                  try {
+                    // Add stale label
+                    await github.rest.issues.addLabels({
+                      owner,
+                      repo,
+                      issue_number: issue.number,
+                      labels: [STALE_LABEL]
+                    });
+
+                    // Post warning comment
+                    await github.rest.issues.createComment({
+                      owner,
+                      repo,
+                      issue_number: issue.number,
+                      body: warnComment
+                    });
+                    console.log(`Successfully warned assignees for #${issue.number}`);
+                  } catch (err) {
+                    console.error(`Error warning assignees for issue #${issue.number}:`, err.message);
+                  }
+                }
+              }
+            }
+
+            console.log('Finished processing inactive issue assignments.');

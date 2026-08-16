@@ -1,0 +1,56 @@
+name: Issue Assignment Welcome
+
+on:
+  issues:
+    types: [assigned]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  welcome-assignee:
+    name: Welcome Assigned Contributor
+    if: "!github.event.issue.pull_request"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post Welcome & Policy Comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issueNumber = context.payload.issue.number;
+            const assignee = context.payload.assignee;
+
+            if (!assignee || assignee.login.endsWith('[bot]')) {
+              console.log('Skipping assignment for missing or bot assignee.');
+              return;
+            }
+
+            const welcomeMessage = [
+              `Welcome @${assignee.login}! 🎉 Thank you for picking up this task for **RVCE Events**.`,
+              ``,
+              `### 🚀 Next Steps & Quick Reference`,
+              `- **Contribution Guide**: Check out our [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md) for local development setup and guidelines.`,
+              `- **Branch Naming**: Please create a branch named \`feat/issue-${issueNumber}-short-description\` or \`fix/issue-${issueNumber}-short-description\`.`,
+              `- **Pull Request**: When you open your PR, include **\`Fixes #${issueNumber}\`** in the PR description to automatically link and close this issue upon merge.`,
+              ``,
+              `### ⏱️ Activity & Assignment Policy`,
+              `To ensure tickets stay active and maintain momentum across the team:`,
+              `- Please post an update or link a draft PR within **3 days**.`,
+              `- If there is no activity for 3 days, you will receive a friendly reminder ping.`,
+              `- After **5 days of total inactivity**, the issue will be automatically unassigned and reopened for other contributors.`,
+              ``,
+              `If you have any questions, need guidance, or run into roadblocks, feel free to ask directly in this thread. Happy coding! 🚀`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              body: welcomeMessage
+            });
+
+            console.log(`Posted welcome message to @${assignee.login} on #${issueNumber}`);
