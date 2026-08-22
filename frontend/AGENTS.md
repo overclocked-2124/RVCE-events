@@ -119,6 +119,7 @@ frontend/
 5. **Static Assets**: All images, fonts, and media go in `public/`. Use Next.js `<Image>` component for optimized image rendering.
 6. **Path Aliases**: Use `@/` for absolute imports (configured in `tsconfig.json`).
 7. **Environment Variables & Public Repo Security**: Never commit `.env` or `.env.local`. Document all required keys in `frontend/.env.example` with dummy placeholders. Client-exposed variables must be prefixed with `NEXT_PUBLIC_` and must NEVER contain secrets or private tokens.
+8. **Authentication & Open-Source Dev Mock Mode**: Google OAuth institutional verification is encapsulated in `src/bff/auth/`. For frictionless open-source local testing without requiring personal Google Cloud credentials, Dev Mock Auth (`/api/auth/mock` and `<DevAuthPanel />`) is active when `NODE_ENV !== "production"`.
 
 ---
 

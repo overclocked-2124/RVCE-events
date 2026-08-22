@@ -3,6 +3,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getSession } from "@/src/bff/auth";
 import { GoogleSignInButton } from "@/src/components/auth/google-sign-in-button";
+import { DevAuthPanel } from "@/src/components/auth/dev-auth-panel";
 import { Sparkles, ShieldCheck } from "lucide-react";
 
 export default async function HomePage() {
@@ -10,6 +11,8 @@ export default async function HomePage() {
   if (session) {
     redirect("/coming-soon");
   }
+
+  const isDev = process.env.NODE_ENV !== "production";
 
   return (
     <main className="relative w-screen min-h-screen bg-[var(--bg-cobalt)] text-[var(--text-blush)] flex flex-col justify-between select-none overflow-x-hidden">
@@ -60,7 +63,7 @@ export default async function HomePage() {
           </p>
 
           {/* Sign In CTA */}
-          <div className="flex flex-col items-center gap-4 w-full sm:w-auto">
+          <div className="flex flex-col items-center gap-4 w-full sm:w-auto mb-8">
             <GoogleSignInButton size="lg" className="w-full sm:w-auto" />
 
             <div className="flex items-center gap-1.5 text-xs text-[var(--text-blush-muted)]">
@@ -68,6 +71,9 @@ export default async function HomePage() {
               <span>Strictly restricted to official @rvce.edu.in accounts</span>
             </div>
           </div>
+
+          {/* Dev Mock Auth Panel (Visible only in development) */}
+          {isDev && <DevAuthPanel className="mt-4" />}
         </div>
       </section>
 
