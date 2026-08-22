@@ -1,10 +1,8 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
 import { ShieldAlert, ArrowLeft, RefreshCw, AlertTriangle } from "lucide-react";
 import { cn } from "@/src/lib/utils";
-import { AuthErrorReason } from "@/src/bff/auth";
+import type { AuthErrorReason } from "@/src/bff/auth/types";
 
 export interface AuthErrorCardProps {
   reason?: AuthErrorReason | string;
@@ -83,9 +81,9 @@ export function AuthErrorCard({ reason = "unauthorized_domain", className }: Aut
       </span>
 
       {/* Title */}
-      <h2 className="font-aalto text-3xl sm:text-4xl text-[var(--text-blush)] my-3 tracking-wide uppercase leading-normal">
+      <h1 className="font-aalto text-3xl sm:text-4xl text-[var(--text-blush)] my-3 tracking-wide uppercase leading-normal">
         {content.title}
-      </h2>
+      </h1>
 
       {/* Description */}
       <p className="text-sm sm:text-base text-[var(--text-blush-muted)] leading-relaxed mb-8 max-w-md">
@@ -96,17 +94,17 @@ export function AuthErrorCard({ reason = "unauthorized_domain", className }: Aut
       <div className="w-full flex flex-col sm:flex-row items-center gap-3.5">
         <a
           href="/api/auth/login"
-          className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-[var(--text-blush)] text-[var(--bg-cobalt)] font-semibold text-sm py-3.5 px-5 rounded-xl shadow-md hover:bg-[#ffe3e9] transition-all duration-200 active:scale-[0.98]"
+          className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-[var(--text-blush)] text-[var(--bg-cobalt)] font-semibold text-sm py-3.5 px-5 rounded-xl shadow-md hover:opacity-90 transition-all duration-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-cobalt)]"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-4 h-4" aria-hidden="true" />
           <span>Try Again</span>
         </a>
 
         <Link
           href="/"
-          className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-transparent border border-[var(--border-blush)] text-[var(--text-blush)] font-medium text-sm py-3.5 px-5 rounded-xl hover:bg-[rgba(253,205,215,0.1)] transition-all duration-200"
+          className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-transparent border border-[var(--border-blush)] text-[var(--text-blush)] font-medium text-sm py-3.5 px-5 rounded-xl hover:bg-[rgba(253,205,215,0.1)] transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-cobalt)]"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           <span>Back to Home</span>
         </Link>
       </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { SESSION_COOKIE_NAME, SessionTokenPayload } from "@/src/bff/auth";
+import { SESSION_COOKIE_NAME } from "@/src/bff/auth/session";
+import type { SessionTokenPayload } from "@/src/bff/auth/types";
 
 const DEFAULT_SECRET = "rvce-events-development-secret-key-min-32-chars";
 
@@ -8,7 +9,10 @@ async function verifyTokenInMiddleware(token?: string) {
   if (!token) return null;
   try {
     const secret = process.env.AUTH_SECRET || (process.env.NODE_ENV !== "production" ? DEFAULT_SECRET : "");
-    if (!secret) return null;
+    if (!secret) {
+      console.error("AUTH_SECRET is not configured. Session verification will fail for all users.");
+      return null;
+    }
 
     const secretKey = new TextEncoder().encode(secret);
     const { payload } = await jwtVerify<SessionTokenPayload>(token, secretKey, {

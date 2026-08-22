@@ -42,21 +42,14 @@ export default async function ComingSoonPage() {
 
       {/* Dead Center Display: COMING SOON */}
       <section className="relative flex flex-col items-center justify-center text-center z-10 w-full px-2 sm:px-4">
-        <div className="flex flex-col items-center justify-center leading-none">
-          {/* Line 1: COMING */}
-          <div className="w-full flex items-center justify-center">
-            <h1 className="font-aalto text-[36vw] sm:text-[23vw] md:text-[21vw] lg:text-[19vw] font-normal leading-[0.82] tracking-normal text-[var(--text-blush)] uppercase">
-              COMING
-            </h1>
-          </div>
-
-          {/* Line 2: SOON */}
-          <div className="w-full flex items-center justify-center">
-            <h2 className="font-aalto text-[36vw] sm:text-[23vw] md:text-[21vw] lg:text-[19vw] font-normal leading-[0.82] tracking-normal text-[var(--text-blush)] uppercase">
-              SOON
-            </h2>
-          </div>
-        </div>
+        <h1 className="flex flex-col items-center justify-center leading-none">
+          <span className="font-aalto text-[36vw] sm:text-[23vw] md:text-[21vw] lg:text-[19vw] font-normal leading-[0.82] tracking-normal text-[var(--text-blush)] uppercase block">
+            COMING
+          </span>
+          <span className="font-aalto text-[36vw] sm:text-[23vw] md:text-[21vw] lg:text-[19vw] font-normal leading-[0.82] tracking-normal text-[var(--text-blush)] uppercase block">
+            SOON
+          </span>
+        </h1>
       </section>
     </main>
   );

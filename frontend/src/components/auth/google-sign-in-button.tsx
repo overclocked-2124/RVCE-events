@@ -76,7 +76,7 @@ export function GoogleSignInButton({
   );
 
   const baseClassName = cn(
-    "inline-flex items-center justify-center bg-[var(--text-blush)] text-[var(--bg-cobalt)] font-medium transition-all duration-200 cursor-pointer select-none shadow-md hover:bg-[#ffe3e9] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-[var(--border-blush-strong)] focus:ring-offset-2 focus:ring-offset-[var(--bg-cobalt)]",
+    "inline-flex items-center justify-center bg-[var(--text-blush)] text-[var(--bg-cobalt)] font-medium transition-all duration-200 cursor-pointer select-none shadow-md hover:opacity-90 hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-[var(--border-blush-strong)] focus:ring-offset-2 focus:ring-offset-[var(--bg-cobalt)]",
     sizeStyles[size],
     className
   );

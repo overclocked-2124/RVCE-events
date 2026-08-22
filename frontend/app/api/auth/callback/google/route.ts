@@ -85,7 +85,17 @@ export async function GET(request: NextRequest) {
 
     const userInfo: GoogleUserPayload = await userInfoResponse.json();
 
-    // 5. Strict Institutional Email & Domain Verification (P0)
+    // 5. Assert email is verified by Google (OpenID Connect requirement)
+    if (!userInfo.email_verified) {
+      console.warn(`Rejected unverified email: ${userInfo.email}`);
+      const response = NextResponse.redirect(
+        new URL("/auth/error?reason=unauthorized_domain", request.url)
+      );
+      response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
+      return response;
+    }
+
+    // 6. Strict Institutional Email & Domain Verification (P0)
     const validation = validateInstitutionalEmail(userInfo.email, userInfo.hd);
     if (!validation.valid) {
       console.warn(`Access denied for non-RVCE email: ${userInfo.email}, hd: ${userInfo.hd}`);

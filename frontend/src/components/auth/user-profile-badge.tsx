@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { LogOut, CheckCircle2 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
-import { SessionUser } from "@/src/bff/auth";
+import type { SessionUser } from "@/src/bff/auth/types";
 
 export interface UserProfileBadgeProps {
   user: SessionUser;
@@ -66,18 +66,22 @@ export function UserProfileBadge({ user, className, onSignOut }: UserProfileBadg
           type="button"
           onClick={onSignOut}
           title="Sign Out"
-          className="ml-1 p-1.5 rounded-full text-[var(--text-blush-muted)] hover:text-[var(--text-blush)] hover:bg-[rgba(253,205,215,0.2)] transition-colors focus:outline-none"
+          aria-label="Sign Out"
+          className="ml-1 p-1.5 rounded-full text-[var(--text-blush-muted)] hover:text-[var(--text-blush)] hover:bg-[rgba(253,205,215,0.2)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-cobalt)]"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-4 h-4" aria-hidden="true" />
         </button>
       ) : (
-        <a
-          href="/api/auth/logout"
-          title="Sign Out"
-          className="ml-1 p-1.5 rounded-full text-[var(--text-blush-muted)] hover:text-[var(--text-blush)] hover:bg-[rgba(253,205,215,0.2)] transition-colors focus:outline-none"
-        >
-          <LogOut className="w-4 h-4" />
-        </a>
+        <form action="/api/auth/logout" method="POST" className="ml-1">
+          <button
+            type="submit"
+            title="Sign Out"
+            aria-label="Sign Out"
+            className="p-1.5 rounded-full text-[var(--text-blush-muted)] hover:text-[var(--text-blush)] hover:bg-[rgba(253,205,215,0.2)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-cobalt)]"
+          >
+            <LogOut className="w-4 h-4" aria-hidden="true" />
+          </button>
+        </form>
       )}
     </div>
   );

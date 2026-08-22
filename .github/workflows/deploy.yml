@@ -143,36 +143,6 @@ jobs:
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/rvce-events' }}
           SERVICE: ${{ inputs.service || 'frontend' }}
           IMAGE_TAG: ${{ needs.build-and-publish.outputs.image_tag }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || (inputs.target_env == 'production' && 'https://events.codingclubrvce.com' || 'https://events.test.codingclubrvce.com') }}
         run: |
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$DEPLOY_USER@$DEPLOY_HOST" \
-            "cd '$DEPLOY_PATH' && git fetch origin main && git checkout --detach origin/main && \
-             python3 -c \"
-import os
-env_file = 'deploy/server.env'
-updates = {
-    'GOOGLE_CLIENT_ID': os.environ.get('GOOGLE_CLIENT_ID', '').strip(),
-    'GOOGLE_CLIENT_SECRET': os.environ.get('GOOGLE_CLIENT_SECRET', '').strip(),
-    'AUTH_SECRET': os.environ.get('AUTH_SECRET', '').strip(),
-    'NEXT_PUBLIC_APP_URL': os.environ.get('NEXT_PUBLIC_APP_URL', '').strip(),
-}
-existing = {}
-if os.path.exists(env_file):
-    with open(env_file, 'r') as f:
-        for line in f:
-            line_str = line.strip()
-            if '=' in line_str and not line_str.startswith('#'):
-                k, v = line_str.split('=', 1)
-                existing[k] = v
-
-for k, v in updates.items():
-    if v:
-        existing[k] = v
-
-with open(env_file, 'w') as f:
-    for k, v in existing.items():
-        f.write(f'{k}={v}\n')
-\" && ./scripts/deploy/deploy-service.sh '$SERVICE' '$IMAGE_TAG'"
+            "cd '$DEPLOY_PATH' && git fetch origin main && git checkout --detach origin/main && ./scripts/deploy/deploy-service.sh '$SERVICE' '$IMAGE_TAG'"
