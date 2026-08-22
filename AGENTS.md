@@ -164,10 +164,17 @@ Browser → Next.js App Router (React Server Components / Route Handlers)
 
 ### 4.3 Database Conventions
 
-- **One logical schema per service** in the shared PostgreSQL instance.
+- One logical schema per service in the shared PostgreSQL instance.
 - All schema changes via **Liquibase** changesets — never manual DDL.
 - Use **JPA/Spring Data** for standard CRUD, **native SQL** for performance-sensitive queries.
 - Database credentials are injected via environment variables, never hardcoded.
+
+### 4.4 Authentication & Open-Source Dev Mock Mode
+
+- **Institutional Google OAuth 2.0**: Strictly enforces `@rvce.edu.in` email and `hd === 'rvce.edu.in'` hosted domain claims on the server-side BFF layer (`frontend/src/bff/auth/`). Personal accounts (`@gmail.com`) and unauthorized domains are rejected immediately.
+- **Stateless JWT Sessions**: Session state is managed via encrypted, `HttpOnly`, `SameSite=Lax` JWT cookies signed using `jose` with `HS256`.
+- **Route Protection**: Unauthenticated access to protected routes (e.g. `/coming-soon`) redirects to `/`. Authenticated access to `/` redirects to `/coming-soon`.
+- **Open-Source Dev Mock Auth**: In development mode (`NODE_ENV !== 'production'`), contributors can use built-in mock profiles (`/api/auth/mock?profile=student|faculty|gmail`) and the `<DevAuthPanel />` UI to test student, faculty, and domain-rejection flows without requiring Google Cloud credentials.
 
 ---
 

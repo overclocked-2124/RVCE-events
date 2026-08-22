@@ -93,10 +93,29 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser to see your changes live.
 
-### 3. Verify Build & Linting Before Committing
-Always ensure your code builds and passes lint checks:
+### 3. Authentication & Dev Mock Auth Mode (Zero Config)
+You **do not need Google Cloud credentials** to contribute and test authentication features locally!
+
+- When running `npm run dev`, the landing page includes a **`[DEV MODE] Mock Sign-In Profiles`** drawer.
+- With 1 click, you can simulate signing in as:
+  - 🎓 **Student** (`ananya.cs23@rvce.edu.in`) $\rightarrow$ Tests successful login and protected route access.
+  - 🏛️ **Faculty** (`principal@rvce.edu.in`) $\rightarrow$ Tests faculty session authorization.
+  - 🚫 **Personal Gmail** (`personal.user@gmail.com`) $\rightarrow$ Tests institutional domain rejection and the access restriction error screen.
+
+#### Testing with Real Google OAuth (Optional)
+If you want to test the real Google OAuth 2.0 flow:
+1. Copy `frontend/.env.example` to `frontend/.env.local`:
+   ```bash
+   cp frontend/.env.example frontend/.env.local
+   ```
+2. Create a free OAuth 2.0 Web Client in [Google Cloud Console](https://console.cloud.google.com/) with redirect URI `http://localhost:3000/api/auth/callback/google`.
+3. Add your `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and a random 32+ character `AUTH_SECRET` to `frontend/.env.local`.
+
+### 4. Verify Build, Tests & Linting Before Committing
+Always ensure your code passes unit tests, lint checks, and builds cleanly:
 ```bash
 cd frontend
+npm test
 npm run lint
 npm run build
 ```
