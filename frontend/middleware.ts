@@ -26,25 +26,24 @@ async function verifyTokenInMiddleware(token?: string) {
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const user = await verifyTokenInMiddleware(token);
 
-  // 1. If accessing protected route /coming-soon and unauthenticated -> redirect to /
-  if (pathname.startsWith("/coming-soon")) {
-    if (!user) {
-      return NextResponse.redirect(new URL("/", request.url));
+  // Attach session user info to request headers for downstream handlers
+  const requestHeaders = new Headers(request.headers);
+  if (user) {
+    requestHeaders.set("x-user-id", user.id);
+    requestHeaders.set("x-user-email", user.email);
+    if (user.role) {
+      requestHeaders.set("x-user-role", user.role);
     }
   }
 
-  // 2. If accessing root landing page / and already authenticated -> redirect to /coming-soon
-  if (pathname === "/") {
-    if (user) {
-      return NextResponse.redirect(new URL("/coming-soon", request.url));
-    }
-  }
-
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {

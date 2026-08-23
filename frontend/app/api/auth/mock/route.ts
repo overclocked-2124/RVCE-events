@@ -36,7 +36,7 @@ const MOCK_PROFILES: Record<string, SessionUser> = {
 export async function GET(request: NextRequest) {
   // Mock endpoint is disabled in production
   if (process.env.NODE_ENV === "production") {
-    return NextResponse.redirect(new URL("/auth/error?reason=oauth_failed", request.url));
+    return NextResponse.redirect(new URL("/?auth_error=oauth_failed", request.url));
   }
 
   const profileKey = request.nextUrl.searchParams.get("profile") || "student";
@@ -45,12 +45,12 @@ export async function GET(request: NextRequest) {
   // Run through domain validation assertion
   const validation = validateInstitutionalEmail(mockUser.email, mockUser.hd);
   if (!validation.valid) {
-    return NextResponse.redirect(new URL("/auth/error?reason=unauthorized_domain", request.url));
+    return NextResponse.redirect(new URL("/?auth_error=unauthorized_domain", request.url));
   }
 
-  // Issue session token and redirect to /coming-soon
+  // Issue session token and redirect to /
   const token = await createSessionToken(mockUser);
-  const response = NextResponse.redirect(new URL("/coming-soon", request.url));
+  const response = NextResponse.redirect(new URL("/", request.url));
   response.cookies.set(SESSION_COOKIE_NAME, token, SESSION_COOKIE_OPTIONS);
 
   return response;
