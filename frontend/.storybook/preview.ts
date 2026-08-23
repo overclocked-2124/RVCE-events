@@ -1,6 +1,11 @@
 import type { Preview } from "@storybook/react";
 import "../app/globals.css";
 
+// Polyfill process for Next.js components (next/link, next/image) running in Vite/browser environment
+if (typeof window !== "undefined" && !(window as unknown as { process?: unknown }).process) {
+  (window as unknown as { process: { env: Record<string, string> } }).process = { env: {} };
+}
+
 const preview: Preview = {
   parameters: {
     controls: {

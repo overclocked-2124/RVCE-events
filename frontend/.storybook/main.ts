@@ -21,6 +21,10 @@ const config: StorybookConfig = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname, "../"),
     };
+    config.define = {
+      ...config.define,
+      "process.env": {},
+    };
     return config;
   },
 };
