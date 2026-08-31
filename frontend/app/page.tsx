@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
@@ -9,18 +10,24 @@ export default function HomePage() {
       <header className="absolute top-4 left-4 right-4 sm:top-7 sm:left-7 sm:right-7 md:top-9 md:left-9 md:right-9 lg:top-11 lg:left-11 lg:right-11 z-20 flex justify-between items-start pointer-events-none">
         {/* Top Left: RVCE Logo */}
         <div className="pointer-events-auto flex items-start">
-          <img
+          <Image
             src="/logos/rvce_logo_blush.png"
             alt="RVCE Logo"
+            width={2330}
+            height={1001}
+            priority
             className="h-10 sm:h-14 md:h-18 lg:h-22 w-auto block object-contain transition-opacity duration-300 hover:opacity-90"
           />
         </div>
 
         {/* Top Right: Coding Club Logo */}
         <div className="pointer-events-auto flex items-start">
-          <img
+          <Image
             src="/logos/coding_club_logo_blush.png"
             alt="Coding Club RVCE Logo"
+            width={1913}
+            height={1372}
+            priority
             className="h-[55px] sm:h-[75px] md:h-[95px] lg:h-[120px] w-auto block object-contain transition-opacity duration-300 hover:opacity-90"
           />
         </div>

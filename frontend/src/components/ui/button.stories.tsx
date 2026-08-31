@@ -8,11 +8,11 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: "select",
-      options: ["primary", "outline", "ghost", "pill"],
+      options: ["default", "outline", "secondary", "ghost", "destructive", "link", "pill"],
     },
     size: {
       control: "select",
-      options: ["sm", "md", "lg"],
+      options: ["default", "xs", "sm", "lg", "hero", "icon"],
     },
     isLoading: {
       control: "boolean",
@@ -33,11 +33,11 @@ const meta: Meta<typeof Button> = {
 export default meta;
 type Story = StoryObj<typeof Button>;
 
-export const Primary: Story = {
+export const Default: Story = {
   args: {
     children: "Sign in with RVCE Mail",
-    variant: "primary",
-    size: "md",
+    variant: "default",
+    size: "default",
   },
 };
 
@@ -45,7 +45,15 @@ export const Outline: Story = {
   args: {
     children: "View Events Catalog",
     variant: "outline",
-    size: "md",
+    size: "default",
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    children: "Browse Archive",
+    variant: "secondary",
+    size: "default",
   },
 };
 
@@ -53,10 +61,27 @@ export const Ghost: Story = {
   args: {
     children: "Explore Guidelines",
     variant: "ghost",
-    size: "md",
+    size: "default",
   },
 };
 
+export const Destructive: Story = {
+  args: {
+    children: "Cancel Registration",
+    variant: "destructive",
+    size: "default",
+  },
+};
+
+export const Link: Story = {
+  args: {
+    children: "Read the code of conduct",
+    variant: "link",
+    size: "default",
+  },
+};
+
+/** Project addition: editorial pill badge, sized by `.pill-badge`. */
 export const Pill: Story = {
   args: {
     children: "100 AICTE Points",
@@ -64,10 +89,19 @@ export const Pill: Story = {
   },
 };
 
+/** Project addition: hero CTA scale, used on the full-page feedback screens. */
+export const Hero: Story = {
+  args: {
+    children: "Back to Home",
+    variant: "default",
+    size: "hero",
+  },
+};
+
 export const Loading: Story = {
   args: {
     children: "Authenticating...",
-    variant: "primary",
+    variant: "default",
     isLoading: true,
   },
 };
@@ -75,7 +109,17 @@ export const Loading: Story = {
 export const Disabled: Story = {
   args: {
     children: "Registration Closed",
-    variant: "primary",
+    variant: "default",
     disabled: true,
+  },
+};
+
+/** `render` makes the button an anchor, for navigation CTAs. */
+export const AsLink: Story = {
+  args: {
+    children: "Explore Events",
+    variant: "outline",
+    size: "hero",
+    render: <a href="#" />,
   },
 };

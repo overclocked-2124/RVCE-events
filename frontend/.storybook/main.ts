@@ -7,6 +7,12 @@ const config: StorybookConfig = {
     "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)",
     "../app/**/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
+  // Output is public/storybook, so ../public cannot be mapped wholesale onto
+  // itself — map only the directories the stories actually reference.
+  staticDirs: [
+    { from: "../public/fonts", to: "/fonts" },
+    { from: "../public/logos", to: "/logos" },
+  ],
   addons: [
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
