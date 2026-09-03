@@ -14,6 +14,7 @@ on:
 
 permissions:
   issues: write
+  pull-requests: read
   contents: read
 
 jobs:
@@ -68,8 +69,8 @@ jobs:
               const assigneeLogins = issue.assignees.map(a => a.login);
               const assigneeMentions = assigneeLogins.map(login => `@${login}`).join(' ');
 
-              // 2. Fetch comments and timeline events for the issue
-              const [comments, events] = await Promise.all([
+              // 2. Fetch comments, events, and the timeline (for linked PRs) for the issue
+              const [comments, events, timeline] = await Promise.all([
                 github.paginate(github.rest.issues.listComments, {
                   owner,
                   repo,
@@ -81,8 +82,25 @@ jobs:
                   repo,
                   issue_number: issue.number,
                   per_page: 100
+                }),
+                github.paginate(github.rest.issues.listEventsForTimeline, {
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  per_page: 100
                 })
               ]);
+
+              // Pull requests linked to this issue, either via a closing keyword
+              // (e.g. "Fixes #N") or a plain mention, surface as 'cross-referenced'
+              // timeline events whose source is a pull request. Only count PRs
+              // authored by a current assignee — a cross-reference from someone
+              // else's unrelated PR isn't evidence the assignee is working on it.
+              const linkedPRs = timeline
+                .filter(e => e.event === 'cross-referenced' && e.source?.issue?.pull_request)
+                .map(e => e.source.issue)
+                .filter(pr => assigneeLogins.includes(pr.user?.login));
+              const hasOpenLinkedPR = linkedPRs.some(pr => pr.state === 'open');
 
               // Find the most recent 'assigned' event for any current assignee
               let lastAssignedTime = new Date(issue.created_at).getTime();
@@ -115,11 +133,43 @@ jobs:
                 }
               }
 
+              // Treat updates to any linked PR (pushes, edits, etc.) updated after
+              // assignment as user activity too, same as issue comments.
+              for (const pr of linkedPRs) {
+                const prUpdatedTime = new Date(pr.updated_at).getTime();
+                if (prUpdatedTime >= lastAssignedTime && prUpdatedTime > lastUserActivityTime) {
+                  lastUserActivityTime = prUpdatedTime;
+                }
+              }
+
               const now = Date.now();
               const msPerDay = 24 * 60 * 60 * 1000;
               const daysSinceActivity = (now - lastUserActivityTime) / msPerDay;
 
-              console.log(`Issue #${issue.number} (${assigneeLogins.join(', ')}): daysSinceActivity = ${daysSinceActivity.toFixed(2)}, hasStaleLabel = ${hasStaleLabel}`);
+              console.log(`Issue #${issue.number} (${assigneeLogins.join(', ')}): daysSinceActivity = ${daysSinceActivity.toFixed(2)}, hasStaleLabel = ${hasStaleLabel}, hasOpenLinkedPR = ${hasOpenLinkedPR}`);
+
+              // Case 0: An open pull request is already linked to this issue. That is
+              // active work in progress even if the issue thread itself is quiet, so
+              // don't warn or unassign — just clear a stale label if one snuck in.
+              if (hasOpenLinkedPR) {
+                console.log(`Issue #${issue.number}: Has an open linked pull request from an assignee. Treating as active and skipping stale checks.`);
+                if (hasStaleLabel) {
+                  console.log(`Issue #${issue.number}: Removing '${STALE_LABEL}' label.`);
+                  if (!dryRun) {
+                    try {
+                      await github.rest.issues.removeLabel({
+                        owner,
+                        repo,
+                        issue_number: issue.number,
+                        name: STALE_LABEL
+                      });
+                    } catch (err) {
+                      console.error(`Failed to remove label from #${issue.number}:`, err.message);
+                    }
+                  }
+                }
+                continue;
+              }
 
               // Case 1: Issue has stale label, but user was active after the warning was posted
               if (hasStaleLabel && lastUserActivityTime > lastWarningCommentTime && lastWarningCommentTime > 0) {
