@@ -1,17 +1,20 @@
 "use client";
 
 import { Button } from "@/src/components/ui/button";
+import { cn } from "@/src/lib/utils";
 
 type GoogleSignInButtonProps = {
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   disabled?: boolean;
+  className?: string;
 };
 
 export function GoogleSignInButton({
   size = "md",
   isLoading = false,
   disabled = false,
+  className,
 }: GoogleSignInButtonProps) {
   const handleSignIn = () => {
     window.location.href = "/api/auth/login";
@@ -24,7 +27,7 @@ export function GoogleSignInButton({
       disabled={disabled}
       onClick={handleSignIn}
       aria-label="Sign in with RVCE Mail"
-      className="gap-2 focus-visible:ring-2"
+      className={cn("gap-2 focus-visible:ring-2", className)}
     >
       <svg
         width="18"
