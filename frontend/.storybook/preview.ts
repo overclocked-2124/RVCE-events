@@ -7,6 +7,18 @@ if (typeof window !== "undefined" && !(window as unknown as { process?: unknown 
 }
 
 const preview: Preview = {
+  decorators: [
+    (Story, context) => {
+      const pathname =
+        context.parameters?.nextjs?.pathname ??
+        context.parameters?.pathname ??
+        "/";
+      if (typeof window !== "undefined") {
+        (window as unknown as { __STORYBOOK_PATHNAME__?: string }).__STORYBOOK_PATHNAME__ = pathname;
+      }
+      return Story();
+    },
+  ],
   parameters: {
     controls: {
       matchers: {
