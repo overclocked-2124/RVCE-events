@@ -34,6 +34,11 @@
   --chart-blue: #3b82f6;
   --chart-red: #ef4444;
 
+  /* Leaderboard metals for podium accents. */
+  --leaderboard-gold: #f59e0b;
+  --leaderboard-silver: #94a3b8;
+  --leaderboard-bronze: #d97706;
+
   /* shadcn/ui semantic tokens, mapped onto the brand palette above, so any
      component added via `npx shadcn add` renders in Cobalt & Blush rather
      than shadcn's default neutral greys. */
