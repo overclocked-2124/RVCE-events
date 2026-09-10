@@ -115,6 +115,136 @@ html, body {
   letter-spacing: 0.12em;
 }
 
+/* The landing-page curtain tears open once to reveal the hero message. */
+.landing-header {
+  opacity: 0;
+  animation: landing-fade-in 0.8s 0.45s ease-out forwards;
+}
+
+.paper-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.paper-half {
+  position: absolute;
+  inset-block: -4%;
+  width: 53%;
+  background-color: var(--text-blush);
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 7px, var(--surface-blush-subtle) 8px 9px),
+    repeating-linear-gradient(90deg, transparent 0 11px, var(--border-blush) 12px 13px);
+  box-shadow: 0 0 2rem var(--surface-blush-muted);
+  animation-duration: 1.25s;
+  animation-timing-function: cubic-bezier(0.22, 0.9, 0.28, 1);
+  animation-fill-mode: forwards;
+}
+
+.paper-half-left {
+  left: -2%;
+  clip-path: polygon(
+    0 0, 100% 0, 97% 8%, 100% 16%, 96% 24%, 100% 33%,
+    96% 42%, 100% 50%, 96% 59%, 100% 68%, 96% 77%, 100% 86%, 97% 100%, 0 100%
+  );
+  animation-name: tear-left;
+}
+
+.paper-half-right {
+  right: -2%;
+  clip-path: polygon(
+    0 0, 100% 0, 100% 100%, 0 100%, 3% 86%, 0 77%,
+    4% 68%, 0 59%, 4% 50%, 0 42%, 4% 33%, 0 24%, 4% 16%, 0 8%
+  );
+  animation-name: tear-right;
+}
+
+.reveal-content {
+  animation: boom-in 0.85s 0.88s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.orbit-field {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(78vw, 52rem);
+  height: min(78vw, 32rem);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  animation: landing-fade-in 0.9s 1.05s ease-out forwards;
+}
+
+.orbit-icon {
+  --orbit-radius: min(37vw, 18rem);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(1.25rem, 2.4vw, 2rem);
+  height: clamp(1.25rem, 2.4vw, 2rem);
+  color: var(--text-blush-muted);
+  animation: orbit 16s linear infinite;
+}
+
+.orbit-icon-two { animation-delay: -3.2s; }
+.orbit-icon-three { animation-delay: -6.4s; }
+.orbit-icon-four { animation-delay: -9.6s; }
+.orbit-icon-five { animation-delay: -12.8s; }
+
+.landing-sign-in {
+  opacity: 0;
+  animation: landing-fade-in 0.7s 1.45s ease-out forwards;
+}
+
+@keyframes landing-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes orbit {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg);
+  }
+}
+
+@keyframes tear-left {
+  0%, 18% { transform: translateX(0) rotate(0deg); }
+  100% { transform: translateX(-112%) rotate(-7deg); }
+}
+
+@keyframes tear-right {
+  0%, 18% { transform: translateX(0) rotate(0deg); }
+  100% { transform: translateX(112%) rotate(7deg); }
+}
+
+@keyframes boom-in {
+  0% { opacity: 0; transform: scale(0.56); }
+  65% { opacity: 1; transform: scale(1.07); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paper-reveal {
+    display: none;
+  }
+
+  .landing-header,
+  .orbit-field,
+  .landing-sign-in {
+    animation: none;
+    opacity: 1;
+  }
+
+  .reveal-content {
+    animation: none;
+  }
+}
+
 /* Pill badge outline */
 .pill-badge {
   border: 1.5px solid var(--text-blush);

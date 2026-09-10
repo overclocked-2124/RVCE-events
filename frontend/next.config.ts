@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+    ],
+  },
   // Storybook's static build references its assets relatively (./sb-manager/...).
   // Rewriting /storybook -> /storybook/index.html keeps the browser URL at
   // /storybook, so those assets resolve against the site root and 404, leaving a

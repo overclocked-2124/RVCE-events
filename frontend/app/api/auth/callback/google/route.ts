@@ -22,19 +22,19 @@ export async function GET(request: NextRequest) {
   if (error) {
     console.error("Google OAuth returned error:", error);
     const reason = error === "access_denied" ? "access_denied" : "oauth_failed";
-    return NextResponse.redirect(new URL(`/?auth_error=${reason}`, request.url));
+    return NextResponse.redirect(new URL(`/auth/error?reason=${reason}`, request.url));
   }
 
   // 2. Validate CSRF state parameter
   const savedState = request.cookies.get(OAUTH_STATE_COOKIE_NAME)?.value;
   if (!state || !savedState || state !== savedState) {
     console.error("OAuth state mismatch or missing CSRF token");
-    return NextResponse.redirect(new URL("/?auth_error=invalid_state", request.url));
+    return NextResponse.redirect(new URL("/auth/error?reason=invalid_state", request.url));
   }
 
   if (!code) {
     console.error("Missing authorization code in Google callback");
-    return NextResponse.redirect(new URL("/?auth_error=oauth_failed", request.url));
+    return NextResponse.redirect(new URL("/auth/error?reason=oauth_failed", request.url));
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
   if (!clientId || !clientSecret) {
     console.error("Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in environment");
-    return NextResponse.redirect(new URL("/?auth_error=missing_config", request.url));
+    return NextResponse.redirect(new URL("/auth/error?reason=missing_config", request.url));
   }
 
   const redirectUri = `${appUrl}/api/auth/callback/google`;
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) {
       const errorBody = await tokenResponse.text();
       console.error("Failed to exchange code for token:", errorBody);
-      return NextResponse.redirect(new URL("/?auth_error=oauth_failed", request.url));
+      return NextResponse.redirect(new URL("/auth/error?reason=oauth_failed", request.url));
     }
 
     const tokens: GoogleTokenResponse = await tokenResponse.json();
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
 
     if (!userInfoResponse.ok) {
       console.error("Failed to fetch Google userinfo");
-      return NextResponse.redirect(new URL("/?auth_error=oauth_failed", request.url));
+      return NextResponse.redirect(new URL("/auth/error?reason=oauth_failed", request.url));
     }
 
     const userInfo: GoogleUserPayload = await userInfoResponse.json();
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     if (!userInfo.email_verified) {
       console.warn(`Rejected unverified email: ${userInfo.email}`);
       const response = NextResponse.redirect(
-        new URL("/?auth_error=unauthorized_domain", request.url)
+        new URL("/auth/error?reason=unauthorized_domain", request.url)
       );
       response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
       return response;
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
     if (!validation.valid) {
       console.warn(`Access denied for non-RVCE email: ${userInfo.email}, hd: ${userInfo.hd}`);
       const response = NextResponse.redirect(
-        new URL("/?auth_error=unauthorized_domain", request.url)
+        new URL("/auth/error?reason=unauthorized_domain", request.url)
       );
       // Clean up OAuth state cookie
       response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
@@ -127,6 +127,6 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (err) {
     console.error("Unexpected error during Google OAuth callback:", err);
-    return NextResponse.redirect(new URL("/?auth_error=oauth_failed", request.url));
+    return NextResponse.redirect(new URL("/auth/error?reason=oauth_failed", request.url));
   }
 }
