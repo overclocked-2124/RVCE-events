@@ -15,13 +15,13 @@ const PROFILES: { id: MockProfile; label: string }[] = [
 export function DevAuthPanel() {
   const [isOpen, setIsOpen] = useState(false);
 
- // if (process.env.NODE_ENV === "production") {
-   // return null;
-  //}
+  if (process.env.NODE_ENV === "production") {
+    return null;
+  }
 
-const handleMockAuth = (profile: MockProfile) => {
-  window.location.assign(`/api/auth/mock?profile=${profile}`);
-};
+  const handleMockAuth = (profile: MockProfile) => {
+    window.location.assign(`/api/auth/mock?profile=${profile}`);
+  };
 
   return (
     <aside className="fixed bottom-4 right-4 z-50 w-[min(20rem,calc(100vw-2rem))]">

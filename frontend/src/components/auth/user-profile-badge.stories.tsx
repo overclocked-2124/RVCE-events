@@ -26,13 +26,13 @@ type Story = StoryObj<typeof UserProfileBadge>;
 const student = {
   name: "Ananya Sharma",
   email: "ananya.cs23@rvce.edu.in",
+  
 };
 
 const studentWithAvatar = {
   name: "Ananya Sharma",
   email: "ananya.cs23@rvce.edu.in",
-  picture: "https://i.pravatar.cc/150?img=47",
-};
+ picture: "https://lh3.googleusercontent.com/a/example",};
 
 export const Default: Story = {
   args: {

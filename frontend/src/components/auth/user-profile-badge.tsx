@@ -25,6 +25,7 @@ function getInitials(name: string) {
 
 export function UserProfileBadge({ user: initialUser }: UserProfileBadgeProps) {
   const [user, setUser] = useState<User | null>(initialUser ?? null);
+  const [failedPicture, setFailedPicture] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!initialUser);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -71,6 +72,7 @@ export function UserProfileBadge({ user: initialUser }: UserProfileBadgeProps) {
   }
 
   const initials = getInitials(user.name);
+  const picture = user.picture;
 
   return (
     <div className="flex items-center gap-3 rounded-full border border-primary/20 bg-background px-3 py-2">
@@ -78,14 +80,15 @@ export function UserProfileBadge({ user: initialUser }: UserProfileBadgeProps) {
         className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground font-semibold"
         aria-label={`${user.name}'s profile`}
       >
-        {user.picture ? (
-<Image
-  src={user.picture}
-  alt=""
-  width={40}
-  height={40}
-  className="size-full object-cover"
-/>
+        {picture && failedPicture !== picture ? (
+          <Image
+            src={picture}
+            alt=""
+            width={40}
+            height={40}
+            className="size-full object-cover"
+            onError={() => setFailedPicture(picture)}
+          />
         ) : (
           <span aria-hidden="true">{initials}</span>
         )}
