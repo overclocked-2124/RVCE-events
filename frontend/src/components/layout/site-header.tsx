@@ -25,7 +25,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
@@ -125,12 +124,12 @@ export function SiteHeader({
         className
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Brand Logos */}
-        <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
+        <div className="flex items-center shrink-0">
           <Link
             href="/"
-            className="flex items-center gap-2.5 sm:gap-3.5 group rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)]"
+            className="flex items-center gap-2 sm:gap-3.5 group rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)]"
             aria-label="RVCE Events platform home"
           >
             {/* RVCE Logo */}
@@ -142,7 +141,7 @@ export function SiteHeader({
             />
             {/* Divider */}
             <span
-              className="h-5 sm:h-6 w-px bg-[var(--border-blush)]"
+              className="h-5 sm:h-6 w-px bg-[var(--border-blush)] mx-2 sm:mx-3"
               aria-hidden="true"
             />
             {/* Coding Club Logo */}
@@ -169,7 +168,7 @@ export function SiteHeader({
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 outline-none select-none",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)] select-none",
                   active
                     ? "bg-[var(--surface-blush-subtle)] text-[var(--text-blush)] font-semibold border border-[var(--border-blush)] shadow-xs"
                     : "text-[var(--text-blush-muted)] hover:text-[var(--text-blush)] hover:bg-[var(--surface-blush-subtle)]/60 border border-transparent"
@@ -193,20 +192,21 @@ export function SiteHeader({
         </nav>
 
         {/* Right: Auth Action & User Profile */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
           {user ? (
-            <div className="flex items-center gap-3">
-              {/* Points / USN Badge */}
+            <div className="flex items-center gap-2 lg:gap-3">
+              {/* Points / USN Badge — truncates before avatar is ever clipped */}
               {badgeText && (
                 <div
-                  className="pill-badge text-xs py-1 px-3 border-[var(--border-blush)] bg-[var(--surface-blush-subtle)] whitespace-nowrap"
-                  title={user.usn ? `USN: ${user.usn}` : undefined}
+                  className="pill-badge text-xs py-1 px-3 border-[var(--border-blush)] bg-[var(--surface-blush-subtle)] min-w-0 max-w-[140px]"
+                  title={badgeText}
                 >
-                  {badgeText}
+                  <span className="block truncate">{badgeText}</span>
                 </div>
               )}
 
               {/* User Avatar & Dropdown */}
+              <div className="shrink-0">
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
@@ -233,7 +233,7 @@ export function SiteHeader({
                   sideOffset={8}
                   className="w-56 bg-[var(--surface-dark)] text-[var(--text-blush)] border border-[var(--border-blush)] p-1.5 shadow-xl rounded-xl"
                 >
-                  <DropdownMenuLabel className="px-2 py-1.5 text-xs text-[var(--text-blush-muted)]">
+                  <div className="px-2 py-1.5">
                     <p className="font-semibold text-sm text-[var(--text-blush)] truncate">
                       {user.name}
                     </p>
@@ -245,7 +245,7 @@ export function SiteHeader({
                         {user.role}
                       </p>
                     )}
-                  </DropdownMenuLabel>
+                  </div>
 
                   <DropdownMenuSeparator className="bg-[var(--border-blush)]" />
 
@@ -279,6 +279,7 @@ export function SiteHeader({
                   </form>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </div>
             </div>
           ) : (
             <Button
@@ -294,8 +295,8 @@ export function SiteHeader({
         </div>
 
         {/* Mobile: Hamburger Menu Trigger (< 768px) */}
-        <div className="flex items-center md:hidden gap-2">
-          {/* Quick Avatar/Points for Logged-in Users on Mobile Bar */}
+        <div className="flex items-center md:hidden gap-2 shrink-0">
+          {/* Decorative avatar for logged-in users — non-interactive, drawer contains all account actions */}
           {user && (
             <Avatar size="sm" className="border border-[var(--border-blush)]">
               {user.picture && (
@@ -332,38 +333,39 @@ export function SiteHeader({
 
             <SheetContent
               side="right"
-              className="w-full sm:max-w-sm bg-[var(--surface-dark)] text-[var(--text-blush)] border-l border-[var(--border-blush)] p-6 flex flex-col justify-between"
+              className="w-full sm:max-w-sm bg-[var(--surface-dark)] text-[var(--text-blush)] border-l border-[var(--border-blush)] p-0 flex flex-col"
             >
-              <div>
-                <SheetHeader className="p-0 text-left border-b border-[var(--border-blush)] pb-5">
+              <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col justify-between">
+                <SheetHeader className="p-0 text-left border-b border-[var(--border-blush)] pb-3">
                   <div className="flex items-center gap-2.5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/logos/rvce_logo_blush.png"
                       alt="RVCE"
-                      className="h-8 w-auto object-contain"
+                      className="h-7 w-auto object-contain"
                     />
                     <span
-                      className="h-5 w-px bg-[var(--border-blush)]"
+                      className="h-4 w-px bg-[var(--border-blush)]"
                       aria-hidden="true"
                     />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/logos/coding_club_logo_blush.png"
                       alt="Coding Club"
-                      className="h-9 w-auto object-contain"
+                      className="h-8 w-auto object-contain"
                     />
                   </div>
-                  <SheetTitle className="font-aalto text-xl uppercase tracking-wider text-[var(--text-blush)] mt-4">
+                  <SheetTitle className="font-aalto text-lg uppercase tracking-wider text-[var(--text-blush)] mt-2.5">
                     RVCE Events
                   </SheetTitle>
-                  <SheetDescription className="text-xs text-[var(--text-blush-muted)]">
+                  {/* Visually hidden — kept for screen reader accessibility */}
+                  <SheetDescription className="sr-only">
                     Official events portal for the RVCE student community.
                   </SheetDescription>
                 </SheetHeader>
 
                 {/* Mobile Navigation Links */}
-                <nav className="flex flex-col gap-1.5 mt-6" aria-label="Mobile Navigation">
+                <nav className="flex flex-col gap-1 mt-4" aria-label="Mobile Navigation">
                   {NAV_ITEMS.map((item) => {
                     const active = isRouteActive(item.href);
                     const IconComponent = item.icon;
@@ -376,7 +378,7 @@ export function SiteHeader({
                             href={item.href}
                             aria-current={active ? "page" : undefined}
                             className={cn(
-                              "flex items-center gap-3 px-3.5 py-3 rounded-xl text-base font-medium transition-colors outline-none",
+                              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)]",
                               active
                                 ? "bg-[var(--surface-blush-subtle)] text-[var(--text-blush)] font-semibold border border-[var(--border-blush)]"
                                 : "text-[var(--text-blush-muted)] hover:text-[var(--text-blush)] hover:bg-[var(--surface-blush-subtle)]/50"
@@ -387,7 +389,7 @@ export function SiteHeader({
                         {IconComponent && (
                           <IconComponent
                             className={cn(
-                              "size-5 shrink-0",
+                              "size-4 shrink-0",
                               active
                                 ? "text-[var(--text-blush)]"
                                 : "text-[var(--text-blush-muted)]"
@@ -400,19 +402,18 @@ export function SiteHeader({
                     );
                   })}
                 </nav>
-              </div>
 
               {/* Mobile Drawer Bottom Section: Auth / Account */}
-              <div className="border-t border-[var(--border-blush)] pt-5 mt-auto">
+              <div className="border-t border-[var(--border-blush)] pt-3 mt-auto">
                 {user ? (
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
                     {/* User Profile Overview */}
-                    <div className="flex items-center gap-3">
-                      <Avatar size="default" className="border border-[var(--border-blush)]">
+                    <div className="flex items-center gap-2.5">
+                      <Avatar size="sm" className="border border-[var(--border-blush)] shrink-0">
                         {user.picture && (
                           <AvatarImage src={user.picture} alt={user.name} />
                         )}
-                        <AvatarFallback className="bg-[var(--surface-dark-raised)] text-[var(--text-blush)] font-semibold">
+                        <AvatarFallback className="bg-[var(--surface-dark)] text-[var(--text-blush)] text-[0.65rem] font-semibold">
                           {getInitials(user.name)}
                         </AvatarFallback>
                       </Avatar>
@@ -425,20 +426,23 @@ export function SiteHeader({
                         </p>
                       </div>
                       {badgeText && (
-                        <div className="pill-badge text-[0.65rem] py-0.5 px-2.5 border-[var(--border-blush)] bg-[var(--surface-blush-subtle)] whitespace-nowrap">
-                          {badgeText}
+                        <div
+                          className="pill-badge text-[0.65rem] py-0.5 px-2 border-[var(--border-blush)] bg-[var(--surface-blush-subtle)] shrink-0 max-w-[100px]"
+                          title={badgeText}
+                        >
+                          <span className="block truncate">{badgeText}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Quick Account Links */}
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-0.5">
                       <SheetClose
                         nativeButton={false}
                         render={
                           <Link
                             href="/profile"
-                            className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-blush)] hover:bg-[var(--surface-blush-subtle)] rounded-lg transition-colors"
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--text-blush)] hover:bg-[var(--surface-blush-subtle)] rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)]"
                           />
                         }
                       >
@@ -450,7 +454,7 @@ export function SiteHeader({
                         render={
                           <Link
                             href="/registrations"
-                            className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-blush)] hover:bg-[var(--surface-blush-subtle)] rounded-lg transition-colors"
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--text-blush)] hover:bg-[var(--surface-blush-subtle)] rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-blush-strong)]"
                           />
                         }
                       >
@@ -462,8 +466,9 @@ export function SiteHeader({
                     {/* Mobile Sign Out */}
                     <form action="/api/auth/logout" method="POST">
                       <Button
+                        type="submit"
                         variant="destructive"
-                        size="default"
+                        size="sm"
                         className="w-full justify-center gap-2 border border-destructive/30"
                       >
                         <LogOut className="size-4" />
@@ -472,7 +477,7 @@ export function SiteHeader({
                     </form>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-2.5">
                     <p className="text-xs text-[var(--text-blush-muted)]">
                       Sign in with your @rvce.edu.in institutional email to register for events.
                     </p>
@@ -487,6 +492,7 @@ export function SiteHeader({
                     </Button>
                   </div>
                 )}
+              </div>
               </div>
             </SheetContent>
           </Sheet>

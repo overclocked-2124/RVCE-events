@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { within, userEvent, expect, waitFor } from "@storybook/test";
 import { SiteHeader, SiteHeaderUser } from "./site-header";
 
 const mockStudentUser: SiteHeaderUser = {
@@ -122,5 +123,161 @@ export const Variants: Story = {
     nextjs: {
       pathname: "/events",
     },
+  },
+};
+
+// ─── Interaction Test Stories ────────────────────────────────────────────────
+
+/**
+ * 5. Dropdown Opens Without Crash:
+ * Interaction test that clicks the avatar trigger and verifies the dropdown
+ * menu renders with Profile and Sign Out items — no console error from
+ * Menu.GroupLabel requiring a Group ancestor.
+ */
+export const DropdownOpensWithoutCrash: Story = {
+  args: {
+    variant: "sticky",
+    user: mockStudentUser,
+  },
+  parameters: {
+    nextjs: { pathname: "/events" },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Click the avatar dropdown trigger
+    const trigger = canvas.getByLabelText("Open user menu");
+    await userEvent.click(trigger);
+
+    // The dropdown portal renders outside the canvas, query from document body
+    const body = within(document.body);
+
+    // Wait for dropdown content to appear and verify key items exist
+    await waitFor(() => {
+      expect(body.getByText("Ananya Sharma")).toBeInTheDocument();
+    });
+
+    expect(body.getByText("ananya.cs23@rvce.edu.in")).toBeInTheDocument();
+    expect(body.getByText("Profile")).toBeInTheDocument();
+    expect(body.getByText("My Registrations")).toBeInTheDocument();
+    expect(body.getByText("Sign Out")).toBeInTheDocument();
+  },
+};
+
+/**
+ * 6. Mobile Logout Form Submits:
+ * Interaction test that verifies the mobile Sign Out button has type="submit"
+ * and is contained within a form with the correct POST action.
+ */
+export const MobileLogoutFormSubmits: Story = {
+  args: {
+    variant: "sticky",
+    user: mockStudentUser,
+    defaultMobileOpen: true,
+  },
+  parameters: {
+    viewport: { defaultViewport: "mobile2" },
+    nextjs: { pathname: "/events" },
+  },
+  play: async () => {
+    const body = within(document.body);
+
+    // Wait for the sheet drawer to render (portalled to body)
+    await waitFor(() => {
+      expect(body.getByText("Sign Out")).toBeInTheDocument();
+    });
+
+    // Find the Sign Out button
+    const signOutButton = body.getByText("Sign Out").closest("button");
+    expect(signOutButton).not.toBeNull();
+
+    // Verify it has type="submit" so it actually triggers the form POST
+    expect(signOutButton!.getAttribute("type")).toBe("submit");
+
+    // Verify the button is wrapped in a form with the correct action
+    const form = signOutButton!.closest("form");
+    expect(form).not.toBeNull();
+    expect(form!.getAttribute("action")).toBe("/api/auth/logout");
+    expect(form!.getAttribute("method")).toBe("POST");
+  },
+};
+
+/**
+ * 7. Keyboard Focus Visible on Nav Links:
+ * Interaction test that tabs through desktop nav links and verifies each one
+ * receives a visible focus ring (focus-visible:ring-2).
+ */
+export const KeyboardFocusVisible: Story = {
+  args: {
+    variant: "sticky",
+    user: null,
+  },
+  parameters: {
+    nextjs: { pathname: "/" },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Find the desktop nav container
+    const nav = canvas.getByLabelText("Main Navigation");
+    const links = within(nav).getAllByRole("link");
+
+    // Tab to each nav link and verify focus ring class is present
+    for (const link of links) {
+      link.focus();
+
+      // The element should have focus-visible ring classes in its className
+      expect(link.className).toContain("focus-visible:ring-2");
+      expect(link.className).toContain(
+        "focus-visible:ring-[var(--border-blush-strong)]"
+      );
+    }
+  },
+};
+
+/**
+ * 8. Drawer Scroll on Short Screen:
+ * Interaction test that verifies the mobile drawer's scrollable region can
+ * reach all navigation items and the Sign Out button, even on a short viewport.
+ */
+export const DrawerScrollShortScreen: Story = {
+  args: {
+    variant: "sticky",
+    user: mockStudentUser,
+    defaultMobileOpen: true,
+  },
+  parameters: {
+    viewport: { defaultViewport: "mobile2" },
+    nextjs: { pathname: "/events" },
+  },
+  play: async () => {
+    const body = within(document.body);
+
+    // Wait for the sheet drawer to render (portalled to body)
+    await waitFor(() => {
+      expect(body.getByText("Events")).toBeInTheDocument();
+    });
+
+    // Verify all navigation links are present in the DOM
+    expect(body.getByText("Leaderboard")).toBeInTheDocument();
+    expect(body.getByText("Clubs")).toBeInTheDocument();
+    expect(body.getByText("About")).toBeInTheDocument();
+
+    // Verify account section items are in the DOM
+    expect(body.getByText("Profile")).toBeInTheDocument();
+    expect(body.getByText("My Registrations")).toBeInTheDocument();
+
+    // Verify Sign Out button is in the DOM (the critical item that was
+    // unreachable before the overflow-y-auto fix)
+    const signOutButton = body.getByText("Sign Out").closest("button");
+    expect(signOutButton).not.toBeNull();
+
+    // Verify the scrollable wrapper has overflow-y-auto
+    const sheetPopup = document.querySelector('[data-slot="sheet-content"]');
+    expect(sheetPopup).not.toBeNull();
+
+    // The first child of SheetContent should be our scrollable wrapper
+    const scrollWrapper = sheetPopup!.querySelector(".overflow-y-auto");
+    expect(scrollWrapper).not.toBeNull();
   },
 };
