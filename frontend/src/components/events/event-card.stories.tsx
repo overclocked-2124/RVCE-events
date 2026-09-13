@@ -121,6 +121,6 @@ export const SoldOut: Story = {
   },
 };
 
-export const Loading: Story = {
+export const Loading: StoryObj = {
   render: () => <EventCardSkeleton />,
 };

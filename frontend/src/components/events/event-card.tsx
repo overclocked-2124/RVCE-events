@@ -44,6 +44,7 @@ export interface EventCardProps {
   status?: EventAvailability;
   actionLabel?: string;
   onAction?: () => void;
+  href?: string;
   className?: string;
 }
 
@@ -81,6 +82,7 @@ export function EventCard({
   status = "available",
   actionLabel,
   onAction,
+  href,
   className,
 }: EventCardProps) {
   const resolvedActionLabel =
@@ -460,7 +462,9 @@ export function EventCard({
 
             {/* REGISTER BUTTON */}
             <Button
-              type="button"
+              type={href ? undefined : "button"}
+              nativeButton={href ? false : undefined}
+              render={href ? <a href={href} /> : undefined}
               size="lg"
               disabled={status === "sold-out"}
               className={cn(

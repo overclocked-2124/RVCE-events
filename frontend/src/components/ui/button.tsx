@@ -71,13 +71,18 @@ function Button({
   isLoading = false,
   disabled,
   children,
+  nativeButton,
   ...props
 }: ButtonProps) {
+  const resolvedNativeButton =
+    nativeButton ?? (props.render ? false : undefined);
+
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size }), className)}
       disabled={disabled || isLoading}
+      nativeButton={resolvedNativeButton}
       {...props}
     >
       {isLoading && (
