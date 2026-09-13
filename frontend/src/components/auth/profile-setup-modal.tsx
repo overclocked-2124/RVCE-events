@@ -78,7 +78,10 @@ const profileSetupSchema = z.object({
     ),
 });
 
-export type ProfileSetupFormValues = z.infer<typeof profileSetupSchema>;
+/** Raw input shape — what react-hook-form tracks in its internal field state. */
+export type ProfileSetupFormInput = z.input<typeof profileSetupSchema>;
+/** Validated, coerced output shape — what the submit handler receives. */
+export type ProfileSetupFormValues = z.output<typeof profileSetupSchema>;
 
 // ---------------------------------------------------------------------------
 // Props
@@ -296,7 +299,7 @@ export function ProfileSetupModal({
     handleSubmit,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<ProfileSetupFormValues>({
+  } = useForm<ProfileSetupFormInput, any, ProfileSetupFormValues>({
     resolver: zodResolver(profileSetupSchema),
     defaultValues: {
       fullName: defaultValues?.fullName ?? "",
