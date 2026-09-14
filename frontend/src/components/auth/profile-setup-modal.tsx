@@ -26,20 +26,31 @@ const GRADUATION_YEARS = [
   CURRENT_YEAR + 1,
   CURRENT_YEAR + 2,
   CURRENT_YEAR + 3,
+  CURRENT_YEAR + 4,
 ] as const;
 
 const DEPARTMENTS = [
+  "AE",
+  "CH",
   "CSE",
   "ISE",
+  "CD",
+  "CY",
+  "CV",
   "ECE",
   "EEE",
   "MECH",
   "CIVIL",
   "AIML",
+  "EE",
   "BT",
   "CH",
   "AS",
+  "ISE",
+  "IEM",
   "ETE",
+  "AIML",
+  "MECH",
   "EI",
 ] as const;
 
