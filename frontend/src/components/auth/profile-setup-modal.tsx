@@ -303,7 +303,7 @@ export function ProfileSetupModal({
     handleSubmit,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<ProfileSetupFormInput, any, ProfileSetupFormValues>({
+  } = useForm<ProfileSetupFormInput, undefined, ProfileSetupFormValues>({
     resolver: zodResolver(profileSetupSchema),
     defaultValues: {
       fullName: defaultValues?.fullName ?? "",
