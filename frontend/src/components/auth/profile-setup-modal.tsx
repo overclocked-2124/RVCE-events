@@ -144,10 +144,10 @@ function FieldWrapper({
   children,
 }: FieldWrapperProps) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1">
       <label
         htmlFor={htmlFor}
-        className="text-sm font-medium text-[var(--text-blush)]"
+        className="text-xs sm:text-sm font-medium text-[var(--text-blush)]"
       >
         {label}
         {required && (
@@ -158,12 +158,12 @@ function FieldWrapper({
       </label>
       {children}
       {hint && !error && (
-        <p className="text-xs text-[var(--text-blush-muted)]">{hint}</p>
+        <p className="text-[0.7rem] sm:text-xs text-[var(--text-blush-muted)]">{hint}</p>
       )}
       {error && (
         <p
           role="alert"
-          className="flex items-center gap-1 text-xs text-red-400"
+          className="flex items-center gap-1 text-[0.7rem] sm:text-xs text-red-400"
         >
           {error}
         </p>
@@ -379,7 +379,7 @@ export function ProfileSetupModal({
   // Backdrop click → close
   // ------------------------------------------------------------------
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === overlayRef.current) {
+    if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
       onClose?.();
     }
   };
@@ -389,10 +389,10 @@ export function ProfileSetupModal({
   const isDisabled = isSubmitting;
 
   return (
-    /* Backdrop */
+    /* Backdrop & scrollable viewport with backdrop blur */
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-50 overflow-y-auto backdrop-blur-md [scrollbar-width:thin] [scrollbar-color:var(--border-blush)_transparent]"
       style={{ backgroundColor: "rgba(30, 27, 75, 0.8)" }}
       onClick={handleBackdropClick}
       aria-modal="true"
@@ -400,35 +400,32 @@ export function ProfileSetupModal({
       aria-labelledby="profile-setup-title"
       aria-describedby="profile-setup-desc"
     >
-      {/* Backdrop blur layer */}
-      <div
-        className="absolute inset-0 -z-10 backdrop-blur-md"
-        aria-hidden="true"
-      />
 
-      {/* Dialog panel */}
-      <div
-        ref={dialogRef}
-        className={cn(
-          "relative w-full max-w-lg overflow-y-auto rounded-2xl",
-          "border border-[var(--border-blush)] shadow-2xl",
-          "max-h-[90dvh] sm:max-h-[85dvh]",
-          // Elevated dark surface per spec (#1e1b4b)
-          "bg-[var(--surface-dark)]"
-        )}
-      >
+      {/* Centering wrapper — scrolls the full viewport when modal content exceeds screen height */}
+      <div className="flex min-h-full items-center justify-center p-3 sm:p-6">
+        {/* Dialog panel */}
+        <div
+          ref={dialogRef}
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            "relative w-full max-w-lg rounded-2xl my-auto",
+            "border border-[var(--border-blush)] shadow-2xl",
+            // Elevated dark surface per spec (#1e1b4b)
+            "bg-[var(--surface-dark)]"
+          )}
+        >
         {/* ── Header ───────────────────────────────────────────── */}
-        <div className="flex items-start justify-between border-b border-[var(--border-blush)] px-6 py-5">
-          <div className="flex-1 pr-4">
+        <div className="flex items-start justify-between border-b border-[var(--border-blush)] px-5 sm:px-6 py-3.5 sm:py-4">
+          <div className="flex-1 pr-3 sm:pr-4">
             <h2
               id="profile-setup-title"
-              className="font-aalto text-2xl leading-tight text-[var(--text-blush)] sm:text-3xl"
+              className="font-aalto text-xl leading-tight text-[var(--text-blush)] sm:text-2xl"
             >
               Complete Your Student Profile
             </h2>
             <p
               id="profile-setup-desc"
-              className="mt-1.5 text-sm text-[var(--text-blush-muted)]"
+              className="mt-1 text-xs sm:text-sm text-[var(--text-blush-muted)]"
             >
               Required for AICTE activity point attribution and event ticketing.
               This takes less than a minute.
@@ -457,7 +454,7 @@ export function ProfileSetupModal({
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
           noValidate
-          className="flex flex-col gap-5 px-6 py-6"
+          className="flex flex-col gap-3.5 sm:gap-4 px-5 sm:px-6 py-4 sm:py-5"
         >
           {/* Full Name */}
           <FieldWrapper
@@ -535,7 +532,7 @@ export function ProfileSetupModal({
           </FieldWrapper>
 
           {/* Department + Graduation Year — side by side on sm+ */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3.5 sm:gap-4 sm:grid-cols-2">
             {/* Department */}
             <FieldWrapper
               label="Department"
@@ -654,6 +651,7 @@ export function ProfileSetupModal({
         </form>
       </div>
     </div>
+  </div>
   );
 }
 
