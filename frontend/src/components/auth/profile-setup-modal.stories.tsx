@@ -59,16 +59,10 @@ export const Initial: Story = {
 
 /**
  * **Validation error state** — demonstrates inline error feedback.
- * The `onSubmit` mock immediately resolves, but the zod resolver will reject
- * the default empty values when the form is submitted. In this story we
- * pre-supply an invalid USN so the error message is visible on first render
- * after a submit attempt.
- *
- * To trigger it in Storybook: click "Save & Continue" without filling in
- * required fields, or type an invalid USN like `1RX22CS045`.
- *
- * This story renders a `play` function that programmatically submits the form
- * so the error state is visible without any user interaction.
+ * The play function types an invalid USN (`1RX22CS045` — the `RX` prefix is
+ * deliberately wrong; only `1RV` and `1RZ` are accepted) into the USN field,
+ * then clicks "Save & Continue". The zod resolver rejects the input and the
+ * USN validation error message is displayed automatically.
  */
 export const ValidationError: Story = {
   name: "Validation Errors — invalid USN",
@@ -80,15 +74,31 @@ export const ValidationError: Story = {
     },
   },
   /**
-   * The play function clicks Submit after a short delay so that Storybook's
-   * interactions panel shows the validation error state automatically.
-   * Requires @storybook/addon-interactions (already installed).
+   * The play function types an invalid USN then clicks Submit so that
+   * Storybook's interactions panel shows the USN validation error state
+   * automatically. Requires @storybook/addon-interactions (already installed).
    */
   play: async ({ canvasElement }) => {
     // Small delay so the component has fully mounted
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    // Find and click the submit button to trigger validation
+    // Type an invalid USN — 1RX prefix is deliberately wrong
+    const usnInput = canvasElement.querySelector<HTMLInputElement>("#usn");
+    if (usnInput) {
+      usnInput.focus();
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value"
+      )?.set;
+      nativeInputValueSetter?.call(usnInput, "1RX22CS045");
+      usnInput.dispatchEvent(new Event("input", { bubbles: true }));
+      usnInput.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    // Small delay for React state to settle
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Submit — zod will reject the invalid USN and show the error
     const submitBtn = canvasElement.querySelector<HTMLButtonElement>(
       'button[type="submit"]'
     );

@@ -1,31 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
-import { ProfileSetupModal } from "@/src/components/auth/profile-setup-modal";
 
 export default function HomePage() {
-  const [sessionUser, setSessionUser] = useState<{
-    name: string;
-    email: string;
-  } | null>(null);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-
-  useEffect(() => {
-    // Fetch verified user details from OAuth session
-    fetch("/api/auth/session")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.authenticated && data?.user) {
-          setSessionUser({
-            name: data.user.name,
-            email: data.user.email,
-          });
-          setIsProfileModalOpen(true);
-        }
-      })
-      .catch(() => {});
-  }, []);
   return (
     <main className="relative w-screen h-screen bg-[#4a32f9] text-[#fdcdd7] flex items-center justify-center select-none overflow-hidden">
       {/* Top Header: Responsive alignment and proportional scaling */}
@@ -73,22 +51,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* First-time profile setup modal prompted after OAuth authentication */}
-      {sessionUser && (
-        <ProfileSetupModal
-          open={isProfileModalOpen}
-          onClose={() => setIsProfileModalOpen(false)}
-          defaultValues={{
-            fullName: sessionUser.name,
-            email: sessionUser.email,
-          }}
-          onSubmit={async () => {
-            // Frontend mock submit handler
-            setIsProfileModalOpen(false);
-          }}
-        />
-      )}
     </main>
   );
 }

@@ -72,6 +72,7 @@ const profileSetupSchema = z.object({
     .number()
     .int()
     .min(CURRENT_YEAR, "Graduation year must be current year or later")
+    .max(GRADUATION_YEARS[GRADUATION_YEARS.length - 1], `Graduation year cannot be more than ${GRADUATION_YEARS.length - 1} years from now`)
     .refine((val) => !isNaN(val), "Please select your graduation year"),
   phone: z
     .string()
@@ -151,19 +152,20 @@ function FieldWrapper({
       >
         {label}
         {required && (
-          <span className="ml-1 text-red-400" aria-hidden="true">
+          <span className="ml-1 text-[var(--text-error)]" aria-hidden="true">
             *
           </span>
         )}
       </label>
       {children}
       {hint && !error && (
-        <p className="text-[0.7rem] sm:text-xs text-[var(--text-blush-muted)]">{hint}</p>
+        <p id={`${htmlFor}-hint`} className="text-[0.7rem] sm:text-xs text-[var(--text-blush-muted)]">{hint}</p>
       )}
       {error && (
         <p
+          id={`${htmlFor}-error`}
           role="alert"
-          className="flex items-center gap-1 text-[0.7rem] sm:text-xs text-red-400"
+          className="flex items-center gap-1 text-[0.7rem] sm:text-xs text-[var(--text-error)]"
         >
           {error}
         </p>
@@ -196,7 +198,7 @@ function Input({ hasError, icon, className, ...props }: InputProps) {
           "disabled:cursor-not-allowed disabled:opacity-50",
           icon ? "pl-9" : "pl-3",
           hasError
-            ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+            ? "border-[var(--border-error)] focus:ring-[var(--border-error)] focus:border-[var(--border-error)]"
             : "border-[var(--border-blush)]",
           className
         )}
@@ -238,7 +240,7 @@ function Select({
           "disabled:cursor-not-allowed disabled:opacity-50",
           icon ? "pl-9" : "pl-3",
           hasError
-            ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+            ? "border-[var(--border-error)] focus:ring-[var(--border-error)] focus:border-[var(--border-error)]"
             : "border-[var(--border-blush)]",
           className
         )}
@@ -316,7 +318,8 @@ export function ProfileSetupModal({
     },
   });
 
-  // Sync defaultValues when they change (e.g. when OAuth session loads asynchronously)
+  // Sync form state whenever defaultValues changes, so a parent component
+  // can update the pre-filled name/email at any time.
   useEffect(() => {
     if (defaultValues?.fullName || defaultValues?.email) {
       reset({
@@ -370,6 +373,9 @@ export function ProfileSetupModal({
   useEffect(() => {
     if (!open) return;
 
+    // Capture the element that had focus before we move into the dialog
+    const previousFocus = document.activeElement as HTMLElement | null;
+
     document.addEventListener("keydown", handleKeyDown);
     // Move focus into the dialog on open
     requestAnimationFrame(() => closeBtnRef.current?.focus());
@@ -380,6 +386,10 @@ export function ProfileSetupModal({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = prev;
+      // Restore focus to where it was before the dialog opened
+      if (previousFocus && typeof previousFocus.focus === "function" && document.contains(previousFocus)) {
+        previousFocus.focus();
+      }
     };
   }, [open, handleKeyDown]);
 
@@ -407,8 +417,7 @@ export function ProfileSetupModal({
     /* Backdrop & scrollable viewport with backdrop blur */
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 overflow-y-auto backdrop-blur-md [scrollbar-width:thin] [scrollbar-color:var(--border-blush)_transparent]"
-      style={{ backgroundColor: "rgba(30, 27, 75, 0.8)" }}
+      className="fixed inset-0 z-50 overflow-y-auto backdrop-blur-md bg-[var(--overlay-dark)] [scrollbar-width:thin] [scrollbar-color:var(--border-blush)_transparent]"
       onClick={handleBackdropClick}
       aria-modal="true"
       role="dialog"
@@ -516,6 +525,7 @@ export function ProfileSetupModal({
               disabled={isDisabled}
               aria-readonly="true"
               className="cursor-default opacity-70"
+              aria-describedby={errors.email ? "email-error" : undefined}
               {...register("email")}
             />
           </FieldWrapper>
@@ -566,6 +576,7 @@ export function ProfileSetupModal({
                 hasError={!!errors.department}
                 disabled={isDisabled}
                 defaultValue=""
+                aria-describedby={errors.department ? "department-error" : undefined}
                 {...register("department")}
               >
                 {DEPARTMENTS.map((dept) => (
@@ -590,6 +601,7 @@ export function ProfileSetupModal({
                 hasError={!!errors.graduationYear}
                 disabled={isDisabled}
                 defaultValue=""
+                aria-describedby={errors.graduationYear ? "graduationYear-error" : undefined}
                 {...register("graduationYear")}
               >
                 {GRADUATION_YEARS.map((year) => (
@@ -624,13 +636,14 @@ export function ProfileSetupModal({
                 inputMode="numeric"
                 maxLength={10}
                 disabled={isDisabled}
+                aria-describedby={errors.phone ? "phone-error" : "phone-hint"}
                 className={cn(
                   "w-full rounded-lg border bg-[var(--surface-dark-raised)] py-2.5 pr-3 text-sm text-[var(--text-blush)] placeholder:text-[var(--text-blush-muted)]",
                   "pl-[4.75rem] transition-colors duration-150",
                   "focus:outline-none focus:ring-2 focus:ring-[var(--border-blush-strong)] focus:border-[var(--border-blush-strong)]",
                   "disabled:cursor-not-allowed disabled:opacity-50",
                   errors.phone
-                    ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+                    ? "border-[var(--border-error)] focus:ring-[var(--border-error)] focus:border-[var(--border-error)]"
                     : "border-[var(--border-blush)]"
                 )}
                 {...register("phone")}
