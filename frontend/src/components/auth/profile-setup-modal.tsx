@@ -302,6 +302,7 @@ export function ProfileSetupModal({
     register,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileSetupFormInput, undefined, ProfileSetupFormValues>({
     resolver: zodResolver(profileSetupSchema),
@@ -314,6 +315,20 @@ export function ProfileSetupModal({
       phone: "",
     },
   });
+
+  // Sync defaultValues when they change (e.g. when OAuth session loads asynchronously)
+  useEffect(() => {
+    if (defaultValues?.fullName || defaultValues?.email) {
+      reset({
+        fullName: defaultValues.fullName ?? "",
+        email: defaultValues.email ?? "",
+        usn: "",
+        department: undefined,
+        graduationYear: undefined,
+        phone: "",
+      });
+    }
+  }, [defaultValues?.fullName, defaultValues?.email, reset]);
 
   // ------------------------------------------------------------------
   // Focus trap — keeps keyboard focus inside the dialog while open
@@ -408,7 +423,7 @@ export function ProfileSetupModal({
           ref={dialogRef}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            "relative w-full max-w-lg rounded-2xl my-auto",
+            "relative w-full max-w-lg rounded-2xl my-auto select-text",
             "border border-[var(--border-blush)] shadow-2xl",
             // Elevated dark surface per spec (#1e1b4b)
             "bg-[var(--surface-dark)]"
@@ -456,7 +471,7 @@ export function ProfileSetupModal({
           noValidate
           className="flex flex-col gap-3.5 sm:gap-4 px-5 sm:px-6 py-4 sm:py-5"
         >
-          {/* Full Name */}
+          {/* Full Name — read-only, pre-filled from Google session */}
           <FieldWrapper
             label="Full Name"
             htmlFor="fullName"
@@ -470,7 +485,11 @@ export function ProfileSetupModal({
               placeholder="Ananya Sharma"
               icon={<User className="h-4 w-4" aria-hidden="true" />}
               hasError={!!errors.fullName}
+              // Name from OAuth — read-only, must not be changed per maintainer spec
+              readOnly
               disabled={isDisabled}
+              aria-readonly="true"
+              className="cursor-default opacity-70"
               aria-describedby={
                 errors.fullName ? "fullName-error" : undefined
               }
