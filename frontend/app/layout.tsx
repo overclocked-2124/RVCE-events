@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Space_Grotesk, Geist } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${aaltoFont.variable}`}>
+    <html lang="en" className={cn(inter.variable, spaceGrotesk.variable, aaltoFont.variable, "font-sans", geist.variable)}>
       <body className="antialiased bg-[#4a32f9] text-[#fdcdd7] min-h-screen flex flex-col justify-between selection:bg-[#fdcdd7] selection:text-[#4a32f9]">
         {children}
       </body>

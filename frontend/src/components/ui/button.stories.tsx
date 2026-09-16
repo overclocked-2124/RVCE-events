@@ -1,29 +1,53 @@
 import type { Meta, StoryObj } from "@storybook/react";
+
 import { Button } from "./button";
 
 const meta: Meta<typeof Button> = {
   title: "UI/Button",
   component: Button,
   tags: ["autodocs"],
+
   argTypes: {
     variant: {
       control: "select",
-      options: ["default", "outline", "secondary", "ghost", "destructive", "link", "pill"],
+      options: [
+        "default",
+        "outline",
+        "secondary",
+        "ghost",
+        "destructive",
+        "link",
+        "pill",
+      ],
     },
+
     size: {
       control: "select",
-      options: ["default", "xs", "sm", "lg", "hero", "icon"],
+      options: [
+        "default",
+        "xs",
+        "sm",
+        "lg",
+        "hero",
+        "icon",
+        "icon-xs",
+        "icon-sm",
+        "icon-lg",
+      ],
     },
+
     isLoading: {
       control: "boolean",
     },
+
     disabled: {
       control: "boolean",
     },
   },
+
   decorators: [
     (Story) => (
-      <div className="p-8 bg-[#4a32f9] min-h-[160px] flex items-center justify-center">
+      <div className="flex min-h-[160px] items-center justify-center bg-[var(--bg-cobalt)] p-8">
         <Story />
       </div>
     ),
@@ -31,6 +55,7 @@ const meta: Meta<typeof Button> = {
 };
 
 export default meta;
+
 type Story = StoryObj<typeof Button>;
 
 export const Default: Story = {
@@ -81,7 +106,6 @@ export const Link: Story = {
   },
 };
 
-/** Project addition: editorial pill badge, sized by `.pill-badge`. */
 export const Pill: Story = {
   args: {
     children: "100 AICTE Points",
@@ -89,7 +113,6 @@ export const Pill: Story = {
   },
 };
 
-/** Project addition: hero CTA scale, used on the full-page feedback screens. */
 export const Hero: Story = {
   args: {
     children: "Back to Home",
@@ -114,7 +137,6 @@ export const Disabled: Story = {
   },
 };
 
-/** `render` makes the button an anchor, for navigation CTAs. */
 export const AsLink: Story = {
   args: {
     children: "Explore Events",

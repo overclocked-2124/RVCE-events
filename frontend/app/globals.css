@@ -1,3 +1,4 @@
+/* globals.css — deduplicated, brand tokens declared once and last so nothing overrides them */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -13,11 +14,16 @@
 }
 
 :root {
-  --bg-cobalt: #4a32f9;
-  --text-blush: #fdcdd7;
-  --text-blush-muted: rgba(253, 205, 215, 0.75);
-  --border-blush: rgba(253, 205, 215, 0.4);
-  --border-blush-strong: #fdcdd7;
+  /* Core brand palette */
+  --bg-cobalt: #4A32F9;
+  --surface-card: #1D1568;
+  --text-blush: #FDCDD7;
+  --text-blush-soft: #FFE3EA;
+  --text-blush-muted: #B9AEDD;
+  --text-cream: #F4F1FF;
+  --border-blush: rgba(253, 205, 215, 0.14);
+  --border-blush-strong: rgba(253, 205, 215, 0.36);
+  --accent-coral: #FF9E85;
 
   /* Blush surface tints, used for hover/active fills */
   --surface-blush-subtle: rgba(253, 205, 215, 0.1);
@@ -41,9 +47,21 @@
   --chart-blue: #3b82f6;
   --chart-red: #ef4444;
 
+  /* Parchment/gold sub-theme — kept for any legacy components still using it */
+  --surface-parchment: #f8f1e3;
+  --surface-parchment-muted: #f3ebdd;
+  --surface-parchment-tint: #f4e7c5;
+  --accent-gold: #b69a5a;
+  --accent-gold-deep: #8c6d2f;
+  --accent-gold-gradient-start: #6f5423;
+  --accent-gold-gradient-end: #7c5d25;
+  --text-espresso: #29251d;
+  --text-espresso-muted: #6b6253;
+
   /* shadcn/ui semantic tokens, mapped onto the brand palette above, so any
      component added via `npx shadcn add` renders in Cobalt & Blush rather
-     than shadcn's default neutral greys. */
+     than shadcn's default neutral greys. Declared once, last, so nothing
+     downstream can silently override it. */
   --background: var(--bg-cobalt);
   --foreground: var(--text-blush);
   --card: var(--bg-cobalt);
@@ -246,4 +264,16 @@ html, body {
   --sidebar-accent-foreground: var(--text-blush);
   --sidebar-border: var(--border-blush);
   --sidebar-ring: var(--border-blush-strong);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }
