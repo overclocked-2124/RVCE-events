@@ -24,9 +24,10 @@ const config: StorybookConfig = {
   viteFinal: async (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
-      ...config.resolve.alias,
-      "@": path.resolve(__dirname, "../"),
-    };
+  ...config.resolve.alias,
+  "@": path.resolve(__dirname, "../"),
+  "next/image": path.resolve(__dirname, "../src/storybook/next-image.tsx"),
+};
     config.define = {
       ...config.define,
       "process.env": {},

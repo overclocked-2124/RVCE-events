@@ -12,7 +12,6 @@ const MOCK_PROFILES: Record<string, SessionUser> = {
     id: "mock-student-101",
     name: "Ananya Sharma",
     email: "ananya.cs23@rvce.edu.in",
-    picture: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=128&h=128&fit=crop&crop=faces",
     hd: "rvce.edu.in",
     role: "student",
   },
@@ -20,7 +19,6 @@ const MOCK_PROFILES: Record<string, SessionUser> = {
     id: "mock-faculty-202",
     name: "Dr. K. N. Subramanya",
     email: "principal@rvce.edu.in",
-    picture: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=128&h=128&fit=crop&crop=faces",
     hd: "rvce.edu.in",
     role: "faculty",
   },
@@ -36,7 +34,7 @@ const MOCK_PROFILES: Record<string, SessionUser> = {
 export async function GET(request: NextRequest) {
   // Mock endpoint is disabled in production
   if (process.env.NODE_ENV === "production") {
-    return NextResponse.redirect(new URL("/?auth_error=oauth_failed", request.url));
+    return NextResponse.redirect(new URL("/auth/error?reason=oauth_failed", request.url));
   }
 
   const profileKey = request.nextUrl.searchParams.get("profile") || "student";
@@ -45,7 +43,7 @@ export async function GET(request: NextRequest) {
   // Run through domain validation assertion
   const validation = validateInstitutionalEmail(mockUser.email, mockUser.hd);
   if (!validation.valid) {
-    return NextResponse.redirect(new URL("/?auth_error=unauthorized_domain", request.url));
+    return NextResponse.redirect(new URL("/auth/error?reason=unauthorized_domain", request.url));
   }
 
   // Issue session token and redirect to /
