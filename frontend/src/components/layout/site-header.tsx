@@ -96,6 +96,16 @@ function formatUserBadge(user: SiteHeaderUser): string | null {
   return null;
 }
 
+function formatUserBadgeCompact(user: SiteHeaderUser): string | null {
+  if (user.points !== undefined) {
+    return `${user.points} pts`;
+  }
+  if (user.usn) {
+    return user.usn;
+  }
+  return null;
+}
+
 export function SiteHeader({
   variant = "sticky",
   user = null,
@@ -105,6 +115,7 @@ export function SiteHeader({
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(defaultMobileOpen);
   const badgeText = user ? formatUserBadge(user) : null;
+  const badgeCompactText = user ? formatUserBadgeCompact(user) : null;
 
   const isRouteActive = (href: string) => {
     if (!pathname) return false;
@@ -124,7 +135,7 @@ export function SiteHeader({
         className
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 lg:gap-4">
         {/* Left: Brand Logos */}
         <div className="flex items-center shrink-0">
           <Link
@@ -195,13 +206,16 @@ export function SiteHeader({
         <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
           {user ? (
             <div className="flex items-center gap-2 lg:gap-3">
-              {/* Points / USN Badge — truncates before avatar is ever clipped */}
+              {/* Points / USN Badge — compact points-only on tablet (md), full with USN on desktop (lg+) */}
               {badgeText && (
                 <div
-                  className="pill-badge text-xs py-1 px-3 border-[var(--border-blush)] bg-[var(--surface-blush-subtle)] min-w-0 max-w-[140px]"
+                  className="pill-badge text-[0.7rem] py-0.5 px-2 lg:text-xs lg:py-1 lg:px-3 border-[var(--border-blush)] bg-[var(--surface-blush-subtle)] min-w-0 max-w-[76px] lg:max-w-[140px]"
                   title={badgeText}
                 >
-                  <span className="block truncate">{badgeText}</span>
+                  <span className="block truncate">
+                    <span className="hidden lg:inline">{badgeText}</span>
+                    <span className="inline lg:hidden">{badgeCompactText}</span>
+                  </span>
                 </div>
               )}
 

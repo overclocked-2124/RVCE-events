@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     return response;
   }
 
-  const response = NextResponse.redirect(new URL("/", request.url));
+  const response = NextResponse.redirect(new URL("/", request.url), 303);
   response.cookies.delete(SESSION_COOKIE_NAME);
   return response;
 }
