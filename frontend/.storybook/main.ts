@@ -26,6 +26,7 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname, "../"),
+      "next/navigation": path.resolve(__dirname, "./mocks/next-navigation.ts"),
     };
     config.define = {
       ...config.define,
