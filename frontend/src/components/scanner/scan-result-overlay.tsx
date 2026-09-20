@@ -13,18 +13,24 @@ export interface ScanResultOverlayProps {
     usn: string;
   };
   onDismiss: () => void;
+  autoDismiss?: boolean;
 }
 
-export function ScanResultOverlay({ result, attendee, onDismiss }: ScanResultOverlayProps) {
-  // Auto-dismiss after 3 seconds
+export function ScanResultOverlay({
+  result,
+  attendee,
+  onDismiss,
+  autoDismiss = true,
+}: ScanResultOverlayProps) {
+  // Auto-dismiss after 3 seconds if enabled
   useEffect(() => {
-    if (result) {
+    if (result && autoDismiss) {
       const timer = setTimeout(() => {
         onDismiss();
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [result, onDismiss]);
+  }, [result, onDismiss, autoDismiss]);
 
   if (!result) return null;
 
@@ -34,9 +40,9 @@ export function ScanResultOverlay({ result, attendee, onDismiss }: ScanResultOve
         className={cn(
           "w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col items-center text-center",
           {
-            "bg-[#10b981] text-white": result === "success",
-            "bg-[#f59e0b] text-white": result === "duplicate",
-            "bg-[#ef4444] text-white": result === "invalid",
+            "bg-[var(--chart-emerald)] text-white": result === "success",
+            "bg-[var(--chart-amber)] text-white": result === "duplicate",
+            "bg-[var(--destructive)] text-white": result === "invalid",
           }
         )}
       >
@@ -60,11 +66,8 @@ export function ScanResultOverlay({ result, attendee, onDismiss }: ScanResultOve
           <>
             <AlertTriangle className="h-16 w-16 mb-4" />
             <h2 className="font-aalto text-3xl uppercase mb-2">Already Checked In</h2>
-            <p className="text-lg font-medium opacity-95 mb-1">
-              Already Checked In at 10:15 AM
-            </p>
-            <p className="text-sm opacity-90 font-sans-editorial uppercase tracking-wider">
-              by Volunteer 1
+            <p className="text-base font-medium opacity-95">
+              This ticket has already been recorded.
             </p>
           </>
         )}
@@ -73,8 +76,8 @@ export function ScanResultOverlay({ result, attendee, onDismiss }: ScanResultOve
           <>
             <XCircle className="h-16 w-16 mb-4" />
             <h2 className="font-aalto text-3xl uppercase mb-2">Invalid Ticket</h2>
-            <p className="text-lg font-medium opacity-95">
-              Invalid or Unrecognized Ticket Pass
+            <p className="text-base font-medium opacity-95">
+              Unrecognized or invalid ticket code.
             </p>
           </>
         )}

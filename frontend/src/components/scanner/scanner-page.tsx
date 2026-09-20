@@ -15,8 +15,6 @@ export function ScannerPage() {
     <ScannerActiveView 
       initialCheckedIn={142} 
       capacity={200}
-      eventTitle="HackRVCE 2026"
-      clubName="Coding Club RVCE"
     />
   );
 }
