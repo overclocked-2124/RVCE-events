@@ -21,27 +21,27 @@
 
 ## Package Structure
 
-All backend code follows the `in.rvce.events` group prefix:
+All backend code follows the `in.rvce.events` group prefix. The application is structured as a **Modular Monolith** with clean domain module packages:
 
 ```text
-in.rvce.events.<service-name>/
-├── grpc/                ← gRPC service implementations (extend generated stubs)
+in.rvce.events.<domain>/
+├── grpc/                ← gRPC service implementations (extending generated stubs)
 ├── domain/
 │   ├── model/           ← Domain entities and value objects
 │   ├── repository/      ← Spring Data JPA repositories
 │   └── service/         ← Domain service layer (business logic)
-├── application/         ← Application services (orchestration, use cases)
-├── config/              ← Spring configuration classes
+├── application/         ← Application services (use cases, orchestration)
+├── config/              ← Module-specific Spring configuration
 ├── exception/           ← Domain-specific exceptions
-└── event/               ← Domain event definitions and handlers
+└── event/               ← Domain events and listener handlers
 ```
 
-### Package Naming Examples
-- `in.rvce.events.identity` → Identity Service
-- `in.rvce.events.event` → Event Service
-- `in.rvce.events.registration` → Registration Service
-- `in.rvce.events.attendance` → Attendance Service
-- `in.rvce.events.notification` → Notification Service
+### Domain Module Examples
+- `in.rvce.events.identity` → Identity & Access domain
+- `in.rvce.events.event` → Event management domain
+- `in.rvce.events.registration` → Registration & ticketing domain
+- `in.rvce.events.attendance` → Attendance & QR check-in domain
+- `in.rvce.events.notification` → Notification & email delivery domain
 
 ---
 
@@ -49,29 +49,31 @@ in.rvce.events.<service-name>/
 
 ```text
 backend/
-├── services/                         ← Individual Spring Boot microservices
-│   ├── identity-service/
-│   │   ├── build.gradle.kts          ← Service-specific dependencies
-│   │   ├── src/main/kotlin/          ← Source code (in.rvce.events.identity.*)
-│   │   ├── src/main/resources/       ← application.yml, application-production.yml
-│   │   └── Dockerfile                ← Service container build
-│   ├── event-service/
-│   ├── registration-service/
-│   ├── attendance-service/
-│   └── notification-service/
+├── service/                          ← Core Spring Boot Modular Monolith application
+│   ├── build.gradle.kts              ← Application dependencies & plugins
+│   ├── src/main/kotlin/in/rvce/events/
+│   │   ├── service/                  ← Application entry point & server bootstrap
+│   │   ├── identity/                 ← Identity domain module
+│   │   ├── event/                    ← Event domain module
+│   │   ├── registration/             ← Registration domain module
+│   │   ├── attendance/               ← Attendance domain module
+│   │   └── notification/             ← Notification domain module
+│   ├── src/main/resources/           ← application.yml, application-production.yml
+│   └── Dockerfile                    ← Unified backend container build
 │
 ├── libraries/                        ← Shared JVM libraries
-│   ├── auth-context/                 ← Auth/session context propagation across services
-│   ├── messaging/                    ← Pub/Sub abstractions, transactional outbox pattern
+│   ├── auth-context/                 ← Auth/session context propagation
+│   ├── messaging/                    ← In-process & outbox domain event abstractions
 │   └── persistence/                  ← JPA/Spring Data common configs, Liquibase utils
 │
 ├── database/
-│   └── liquibase/                    ← Service-owned database migration changesets
-│       ├── identity/                 ← Identity service schema migrations
-│       ├── event/                    ← Event service schema migrations
-│       ├── registration/             ← Registration service schema migrations
-│       ├── attendance/               ← Attendance service schema migrations
-│       └── notification/             ← Notification service schema migrations
+│   └── liquibase/                    ← Domain-scoped database migration changesets
+│       ├── master.xml                ← Root Liquibase changelog
+│       ├── identity/                 ← Identity schema migrations
+│       ├── event/                    ← Event schema migrations
+│       ├── registration/             ← Registration schema migrations
+│       ├── attendance/               ← Attendance schema migrations
+│       └── notification/             ← Notification & outbox schema migrations
 │
 └── README.md
 ```
@@ -80,11 +82,11 @@ backend/
 
 ## Architecture Rules
 
-### Service Boundaries
-1. **Each service owns its data.** No service may directly query another service's database tables. All cross-service data access is via gRPC calls or domain events.
-2. **Each service owns its schema.** Liquibase changesets for service X go in `backend/database/liquibase/<service-name>/`.
-3. **Shared code goes in `libraries/`.** If two or more services need the same utility, extract it to a shared library under `backend/libraries/`.
-4. **Services are independently deployable.** Each service has its own `Dockerfile` and can be built, tested, and deployed independently.
+### Modular Monolith Boundaries
+1. **Domain boundaries in code.** Domain packages (`identity`, `event`, etc.) must maintain clean boundaries. Modules interact through defined service interfaces or domain events, never through direct raw entity manipulation across domains.
+2. **Each domain owns its schema.** Liquibase changesets are organized by domain under `backend/database/liquibase/<domain>/`.
+3. **Shared code goes in `libraries/`.** Common utilities, base entity models, or cross-cutting interceptors live under `backend/libraries/`.
+4. **Single runtime, extensible workers.** The core backend runs as a single high-performance JVM container. If high-throughput async processing (e.g. bulk email dispatcher) requires dedicated resources later, worker processes ("and more if required") can be added under `backend/workers/`.
 
 ### gRPC & Protobuf
 1. **All `.proto` files live in `api/proto/`.** Never place proto definitions inside `backend/`.

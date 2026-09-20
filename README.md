@@ -5,14 +5,14 @@ Self-hosted event discovery and management platform for RVCE.
 ## Repository layout
 
 ```text
-api/proto/                 Protocol Buffer contracts (to be designed)
+api/proto/                 Protocol Buffer contracts
 backend/
-  libraries/               Shared Kotlin/JVM libraries (empty)
-  services/                Spring Boot services (empty)
-  database/liquibase/      Service-owned Liquibase migrations (empty)
-frontend/
-  app/                     Next.js application shell; no routes implemented
-  src/bff/                 Frontend BFF boundary; no endpoints implemented
+  service/                 Core Backend Service (Spring Boot Modular Monolith)
+  libraries/               Shared Kotlin/JVM libraries
+  database/liquibase/      Domain-scoped Liquibase migrations
+frontend/                  Console (Next.js 16 App Router — Frontend for Everything)
+  app/                     App Router pages (attendee portal & organizer console)
+  src/bff/                 Embedded Backend-for-Frontend layer
 tests/
   jvm/                     Backend tests (empty)
   playwright/              End-to-end tests (empty)

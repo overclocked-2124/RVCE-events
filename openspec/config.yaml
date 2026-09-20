@@ -1,0 +1,42 @@
+schema: spec-driven
+
+# Project context
+# Injected into every artifact, apply, and archive step.
+context: |
+  Project: RVCE Events Platform (Coding Club RVCE).
+  Frontend: Next.js 16 (App Router, Server Components by default), TypeScript, Tailwind CSS v4, Lucide icons, react-hook-form + zod, Storybook stories mandatory for UI components in src/components/.
+  Backend: Kotlin / Spring Boot 3.x, Java 21, Gradle Kotlin DSL, PostgreSQL with Liquibase migrations.
+  Inter-Service & BFF Architecture:
+    - Services communicate via gRPC defined in api/proto/ and transactional outbox pub/sub domain events.
+    - No direct cross-service database access.
+    - Frontend communicates with backend via BFF layer (frontend/src/bff/); no raw protobuf imports in frontend (use typed client wrappers in frontend/src/bff/clients/ and mappers in frontend/src/bff/mappers/).
+  Design Tokens:
+    - Primary BG: Cobalt (--bg-cobalt: #4a32f9)
+    - Primary Text: Blush (--text-blush: #fdcdd7)
+    - Muted Text: Blush Muted (--text-blush-muted: rgba(253, 205, 215, 0.75))
+    - Borders: --border-blush, --border-blush-strong
+    - Never use raw hex codes in components; always reference CSS variables or Tailwind tokens.
+  Git & Security:
+    - Conventional Commits: feat(scope): ..., fix(scope): ...
+    - Public open-source repo: ZERO tolerance for committed secrets, tokens, or .env files.
+    - Institutional Google OAuth strictly enforces @rvce.edu.in and hosted domain (hd: rvce.edu.in).
+
+# Per-artifact rules
+rules:
+  proposal:
+    - Clearly document architectural impact across frontend BFF and Kotlin backend services
+    - Specify any required proto contracts in api/proto/
+  tasks:
+    - Ensure frontend UI tasks include companion Storybook stories (.stories.tsx)
+    - Ensure database changes specify Liquibase changesets
+    - End distinct implementation tasks with Conventional Commits
+
+# Per-operation guidance
+operations:
+  apply:
+    guidance:
+      - Adhere to the Cobalt & Blush design system tokens
+      - Verify changes build cleanly (npm run build / ./gradlew build)
+  archive:
+    guidance:
+      - Ensure specifications in openspec/specs/ accurately reflect delivered behavior

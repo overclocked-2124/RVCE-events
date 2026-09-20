@@ -2,61 +2,44 @@
 
 ## Purpose
 
-RVCE Events will be a self-hosted event management platform for RVCE. The application is designed to run on infrastructure owned and managed by the project team, without depending on a particular cloud provider or hosting platform.
+RVCE Events is a self-hosted event management platform for RVCE. The application is designed to run reliably on infrastructure owned and managed by the project team, without depending on a particular cloud provider or paid hosting platform.
 
-## Application stack
+## Application Stack
 
 | Area | Technology | Role |
 | --- | --- | --- |
-| Backend | Kotlin on the Java/JVM platform | Application and domain logic |
-| Backend framework | Spring Boot / Spring | Web, dependency injection, configuration, jobs, and application infrastructure |
-| API contract | Protocol Buffers | Strongly typed service and message definitions |
-| API transport | gRPC | Communication between backend services and application layers |
-| Frontend | TypeScript, React, Next.js | Web application and user interface |
-| Build system | Gradle with Kotlin DSL | Builds, dependency management, code generation, and test orchestration |
-| Database | PostgreSQL | Persistent relational data storage |
-| Database migrations | Liquibase Community edition | Versioned and repeatable database schema changes |
-| Persistence | JPA / Spring Data | Standard database access and entity persistence |
-| Complex queries | Native SQL | Queries where JPA or Spring Data is not appropriate or performant |
-| Background processing | Pub/Sub, workers, and scheduled jobs | Asynchronous work, event processing, and periodic tasks |
+| **Console (Frontend)** | TypeScript, React 19, Next.js 16 | Unified web frontend for attendees, organizers, and administrators |
+| **BFF Layer** | Next.js App Router (Server-side) | Institutional OAuth gatekeeper, session encryption, data aggregation, and gRPC translation |
+| **Backend Service** | Kotlin on Java 21 (Temurin) | Application domain logic packaged as a modular monolith (`backend/service/`) |
+| **Backend Framework** | Spring Boot 3.x | Dependency injection, transactions, event publishing, and gRPC server runtime |
+| **API Contract** | Protocol Buffers | Strongly typed service and message definitions in `api/proto/` |
+| **API Transport** | gRPC | High-performance binary communication between BFF and Backend Service |
+| **Database** | PostgreSQL 17 | Relational persistence with domain-scoped tables |
+| **Database Migrations** | Liquibase Community Edition | Versioned and repeatable schema migrations |
+| **Persistence** | JPA / Spring Data | Standard entity persistence and repository interfaces |
+| **Complex Queries** | Native SQL | Performance-critical or PostgreSQL-specific queries |
+| **Background Processing** | Spring Application Events & Transactional Outbox | In-process decoupled domain events; cleanly extensible to dedicated worker containers ("and more if required") |
+| **Styling & Design System** | Tailwind CSS v4 | CSS variable tokens: Cobalt (`#4a32f9`), Blush (`#fdcdd7`) |
+| **Build System** | Gradle (Kotlin DSL) / npm | Builds, dependency management, code generation, and test orchestration |
 
-## Testing
+## Testing Strategy
 
-- Kotlin/JVM tests for backend and domain logic.
-- TypeScript/React tests for frontend components and client-side behavior.
-- Playwright for browser-level end-to-end tests.
-- Python smoke tests for lightweight environment and API verification.
+- **Kotlin/JVM tests**: Unit and integration tests for backend domain logic and gRPC endpoints.
+- **Storybook & React tests**: Mandatory Storybook stories (`.stories.tsx`) for UI components, plus component tests.
+- **Playwright**: Browser-level end-to-end user journeys (authentication, event registration, check-in).
+- **Python smoke tests**: Lightweight deployment verification and endpoint health checks.
 
-## CI/CD
+## Infrastructure & Deployment Scope
 
-GitHub Actions will automate builds, tests, validation, and release workflows. The workflows should remain independent of any particular production hosting provider.
+The platform is designed for self-hosted execution via Docker Compose:
+- **Loopback isolation**: Only the Next.js Console/BFF binds to the host loopback interface (`127.0.0.1:3000`).
+- **Private network**: Backend Service and PostgreSQL are not exposed to the public network.
+- **Memory efficiency**: Running a single backend JVM container alongside Next.js and PostgreSQL fits comfortably within modest VPS constraints (~1GB total RAM footprint vs. ~4GB for multi-JVM setups).
 
-## Hosting and infrastructure scope
+## Initial Architectural Principles
 
-The project will be hosted on our own server. The initial design therefore does not prescribe:
-
-- Terraform
-- Helm
-- Kubernetes
-- Cloudflare Workers
-- Any cloud-provider-specific service
-
-Docker may be used optionally for local development, isolated testing, and reproducible tooling. It is not a production hosting requirement.
-
-## API and frontend boundary
-
-Standard browser clients do not natively call regular gRPC services. The frontend will therefore use one of these application-owned boundaries:
-
-1. Next.js server-side code acts as a gRPC client and exposes the required frontend-facing operations; or
-2. gRPC-Web is introduced if direct browser-to-backend communication is required.
-
-The preferred approach is to keep gRPC as the backend service contract and use a thin Next.js server-side boundary for browser-facing requests, unless the implementation needs direct gRPC-Web access.
-
-## Initial architectural principles
-
-- Keep the backend and frontend independently buildable.
-- Treat Protocol Buffer definitions as versioned API contracts.
-- Keep database schema changes in Liquibase migrations.
-- Prefer JPA/Spring Data for ordinary persistence and native SQL for measured, justified cases.
-- Make background work retryable and observable.
-- Avoid coupling application code to a specific deployment environment.
+- **Console is the frontend for everything**: All user roles (attendees, club leads, faculty admins) share a unified design system and Next.js frontend with role-gated routes.
+- **Keep gRPC at the backend boundary**: Frontend UI components never import raw protobuf stubs; all interactions go through typed BFF wrappers.
+- **Modular Monolith first**: Strong package boundaries in Kotlin keep domains decoupled without distributed systems overhead.
+- **Liquibase for all database changes**: No manual DDL; all schema modifications are versioned and audited.
+- **Zero secrets in code**: Strict open-source security compliance; all credentials injected via runtime environment variables.

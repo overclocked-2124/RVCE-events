@@ -71,21 +71,16 @@ RVCE-events/
 │   └── proto/                   ← .proto files organized by service domain
 │
 ├── backend/                     ← ALL Kotlin/JVM backend code
-│   ├── services/                ← Individual Spring Boot microservices
-│   │   ├── identity-service/
-│   │   ├── event-service/
-│   │   ├── registration-service/
-│   │   ├── attendance-service/
-│   │   └── notification-service/
+│   ├── service/                 ← Core Backend Service (Spring Boot Modular Monolith)
 │   ├── libraries/               ← Shared JVM libraries
 │   │   ├── auth-context/        ← Auth/session context propagation
-│   │   ├── messaging/           ← Pub/Sub & outbox pattern abstractions
+│   │   ├── messaging/           ← In-process & outbox domain event abstractions
 │   │   └── persistence/         ← JPA/Spring Data/Liquibase common utils
 │   └── database/
-│       └── liquibase/           ← Service-owned DB migration changesets
+│       └── liquibase/           ← Domain-scoped DB migration changesets
 │
-├── frontend/                    ← ALL frontend code (Next.js 16 App Router)
-│   ├── app/                     ← Next.js App Router pages & layouts
+├── frontend/                    ← Console (Next.js 16 App Router — Frontend for Everything)
+│   ├── app/                     ← Next.js App Router pages (attendee portal & organizer/admin console)
 │   │   └── api/                 ← Next.js Route Handlers (BFF API endpoints)
 │   ├── src/
 │   │   └── bff/                 ← Backend-for-Frontend layer
@@ -130,9 +125,9 @@ RVCE-events/
 1. **Documentation**: ALL `.md` documentation files (design docs, feature specs, ADRs, runbooks) go in `docs/`. The only exceptions are `README.md`, `CONTRIBUTING.md`, and `AGENTS.md` files at repo or module roots.
 2. **Proto Contracts**: ALL `.proto` files live under `api/proto/`, organized by service domain (e.g., `api/proto/identity/`, `api/proto/event/`). Never place `.proto` files inside `backend/` or `frontend/`.
 3. **No Direct Protobuf Usage in Frontend**: The frontend **must never** import or use raw generated protobuf types directly. All gRPC communication goes through typed **wrapper clients** in `frontend/src/bff/clients/` that expose clean TypeScript interfaces. Proto-to-UI mapping happens in `frontend/src/bff/mappers/`.
-4. **Backend Services**: Each service gets its own directory under `backend/services/<service-name>/` with its own `build.gradle.kts`, source tree, and Dockerfile.
-5. **Shared Backend Code**: Shared JVM code goes in `backend/libraries/<library-name>/`. Never duplicate utility code across services.
-6. **Database Migrations**: Liquibase changesets go in `backend/database/liquibase/`, organized by owning service. Each service owns its schema — no cross-service direct DB access.
+4. **Backend Service Architecture**: Core backend logic lives in `backend/service/` organized into modular packages (`identity`, `event`, `registration`, `attendance`, `notification`) running as a unified Spring Boot application. Specialized background workers ("and more if required") may be added under `backend/workers/` only when scale demands.
+5. **Shared Backend Code**: Shared JVM code goes in `backend/libraries/<library-name>/`. Never duplicate utility code across modules.
+6. **Database Migrations**: Liquibase changesets go in `backend/database/liquibase/`, organized by domain. Modules own their tables — no cross-domain direct DB table access without defined domain services.
 7. **Tests**: Tests live in `tests/` at the repo root, **not** inside individual service or frontend directories (except for co-located unit test files that are standard in each framework).
 8. **Scripts**: All operational/deployment scripts go in `scripts/`. Never put scripts in the repo root.
 9. **Static Assets**: All public static assets (images, fonts, logos) go in `frontend/public/`. Never commit assets elsewhere.
@@ -145,22 +140,23 @@ RVCE-events/
 ### 4.1 Frontend → Backend Communication
 
 ```
-Browser → Next.js App Router (React Server Components / Route Handlers)
+Browser → Console UI (Next.js 16 App Router — Frontend for Everything)
        → BFF Layer (frontend/src/bff/)
        → gRPC Client Wrappers (frontend/src/bff/clients/)
-       → Kotlin/Spring Boot Services (backend/services/)
+       → Backend Core Service (backend/service/)
        → PostgreSQL
 ```
 
-- The **BFF (Backend-for-Frontend)** layer in the Next.js server handles: session auth context, gRPC translation, data aggregation from multiple services, and response shaping for the UI.
+- The **Console** is the unified frontend for all user roles (attendees, organizers, and admins).
+- The **BFF (Backend-for-Frontend)** layer in the Next.js server handles: session auth context, gRPC translation, data aggregation, and response shaping for the UI.
 - **Never call backend services directly from React client components.** All data fetching goes through Next.js server-side mechanisms (Server Components, Route Handlers, Server Actions).
 
-### 4.2 Inter-Service Communication
+### 4.2 Inter-Service & Domain Communication
 
-- Services communicate via **gRPC** using contracts defined in `api/proto/`.
-- **Asynchronous operations** use the transactional outbox pattern with a pub/sub message broker.
-- Domain events (e.g., `EventPublished`, `RegistrationCreated`, `AttendanceRecorded`) are published via the `messaging` library.
-- **No service may directly access another service's database.** All cross-service data access is via gRPC calls or domain events.
+- **BFF → Backend Service**: Communicates via **gRPC** using contracts defined in `api/proto/`.
+- **Internal Domain Events**: Modules coordinate via in-process Spring `ApplicationEvent` dispatch and transactional outbox tables in PostgreSQL, decoupling side-effects without external message broker overhead.
+- **Worker Extensibility ("And More If Required")**: Decoupled domain events allow dedicated worker services (e.g. bulk email dispatch, scanner apps) to be extracted cleanly into separate containers if traffic demands it in the future.
+- **Database Encapsulation**: Domain modules must not directly query another domain's tables without using defined service interfaces or domain events.
 
 ### 4.3 Database Conventions
 
