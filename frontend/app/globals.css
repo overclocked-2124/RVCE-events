@@ -33,6 +33,13 @@
   --surface-dark: #1e1b4b;
   --surface-dark-raised: #272263;
 
+  /* Error / danger state — used for validation error text and borders */
+  --text-error: #f87171;
+  --border-error: #f87171;
+
+  /* Modal overlay — semi-transparent surface-dark backdrop */
+  --overlay-dark: rgba(30, 27, 75, 0.8);
+
   /* Categorical chart hues: blush lead, then the documented state colours */
   --chart-blush: #fdcdd7;
   --chart-amber: #f59e0b;
@@ -50,6 +57,10 @@
   --accent-gold-gradient-end: #7c5d25;
   --text-espresso: #29251d;
   --text-espresso-muted: #6b6253;
+  /* Leaderboard metals for podium accents. */
+  --leaderboard-gold: #f59e0b;
+  --leaderboard-silver: #94a3b8;
+  --leaderboard-bronze: #d97706;
 
   /* shadcn/ui semantic tokens, mapped onto the brand palette above, so any
      component added via `npx shadcn add` renders in Cobalt & Blush rather
