@@ -1,0 +1,22 @@
+<!--
+  Storybook renders stories without ever running app/layout.tsx, so the
+  next/font variables the app depends on (--font-inter, --font-space-grotesk)
+  are undefined here and every story silently falls back to a system sans.
+
+  Loading the same two families and declaring the variables keeps Storybook
+  visually faithful to the running app. Aalto Display already works, because
+  globals.css declares it with a plain @font-face pointing at /fonts.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --font-inter: "Inter", system-ui, sans-serif;
+    --font-space-grotesk: "Space Grotesk", system-ui, sans-serif;
+    --font-aalto-local: "AaltoDisplay", sans-serif;
+  }
+</style>
