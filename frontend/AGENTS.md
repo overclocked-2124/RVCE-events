@@ -1,6 +1,8 @@
-# Frontend — Agent Rules
+# Frontend (Console) — Agent Rules
 
 > Extends the root [AGENTS.md](../AGENTS.md). Read the root document first for project-wide rules.
+>
+> **The Console is the frontend for everything**: It serves all user journeys—student/attendee event discovery, registration, and ticketing alongside club organizer event management, approval workflows, and faculty administration—with the server-side BFF layer embedded directly in the Next.js runtime.
 
 ---
 
@@ -112,8 +114,11 @@ frontend/
 
 ### Rules
 
-1. **Pages & Layouts**: All routes go under `app/` using Next.js App Router conventions. Use folder-based routing with `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`.
-2. **Components**: Create a `components/` directory under `app/` or as `frontend/components/` for shared UI components. Group by feature (e.g., `components/events/`, `components/auth/`).
+1. **Pages & Route Zones**: All routes live under `app/` using Next.js App Router route groups:
+   - `app/(public)/`: Public event discovery, event details, attendee ticketing, and pass retrieval.
+   - `app/(manage)/`: Organizer and administrative console (event creation, attendee lists, QR check-in, approvals).
+   - Use folder-based routing with `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`.
+2. **Components**: Shared UI components live under `src/components/`. Group by domain (e.g., `components/events/`, `components/auth/`, `components/console/`). All UI components must have companion Storybook stories (`.stories.tsx`).
 3. **BFF Layer**: All backend communication logic lives in `src/bff/`. The BFF is server-side only — never import from `src/bff/` in client components.
 4. **No Direct Protobuf**: Frontend must NEVER import raw `.proto` generated types. Use typed wrapper clients in `src/bff/clients/` that expose clean TypeScript interfaces. Data transformation happens in `src/bff/mappers/`.
 5. **Static Assets**: All images, fonts, and media go in `public/`. Use Next.js `<Image>` component for optimized image rendering.
@@ -192,3 +197,13 @@ export function EventCard({ title, date, className }: EventCardProps) {
 - **All PRs adding or modifying UI components must include a companion Storybook story file.**
 - The Docker build uses `output: "standalone"` — the container runs a minimal Node.js server, not the full `node_modules`.
 
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

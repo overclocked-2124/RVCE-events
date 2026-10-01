@@ -1,0 +1,10 @@
+{
+  "$comment": "Defines issue dependencies for the RVCE Events repository.",
+  "$instruction": "Format: \"<blocked_issue_number>\": [<blocking_issue_number>, ...]. When any blocking issue is OPEN, the blocked label is applied. Once ALL blocking issues are CLOSED, the blocked label is automatically removed.",
+  "dependencies": {
+    "40": [45, 46],
+    "41": [45, 46, 40],
+    "42": [45],
+    "43": [42]
+  }
+}

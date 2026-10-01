@@ -1,3 +1,4 @@
+/* globals.css — deduplicated, brand tokens declared once and last so nothing overrides them */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -13,11 +14,16 @@
 }
 
 :root {
-  --bg-cobalt: #4a32f9;
-  --text-blush: #fdcdd7;
-  --text-blush-muted: rgba(253, 205, 215, 0.75);
-  --border-blush: rgba(253, 205, 215, 0.4);
-  --border-blush-strong: #fdcdd7;
+  /* Core brand palette */
+  --bg-cobalt: #4A32F9;
+  --surface-card: #1D1568;
+  --text-blush: #FDCDD7;
+  --text-blush-soft: #FFE3EA;
+  --text-blush-muted: #B9AEDD;
+  --text-cream: #F4F1FF;
+  --border-blush: rgba(253, 205, 215, 0.14);
+  --border-blush-strong: rgba(253, 205, 215, 0.36);
+  --accent-coral: #FF9E85;
 
   /* Blush surface tints, used for hover/active fills */
   --surface-blush-subtle: rgba(253, 205, 215, 0.1);
@@ -27,6 +33,13 @@
   --surface-dark: #1e1b4b;
   --surface-dark-raised: #272263;
 
+  /* Error / danger state — used for validation error text and borders */
+  --text-error: #f87171;
+  --border-error: #f87171;
+
+  /* Modal overlay — semi-transparent surface-dark backdrop */
+  --overlay-dark: rgba(30, 27, 75, 0.8);
+
   /* Categorical chart hues: blush lead, then the documented state colours */
   --chart-blush: #fdcdd7;
   --chart-amber: #f59e0b;
@@ -34,9 +47,25 @@
   --chart-blue: #3b82f6;
   --chart-red: #ef4444;
 
+  /* Parchment/gold sub-theme — kept for any legacy components still using it */
+  --surface-parchment: #f8f1e3;
+  --surface-parchment-muted: #f3ebdd;
+  --surface-parchment-tint: #f4e7c5;
+  --accent-gold: #b69a5a;
+  --accent-gold-deep: #8c6d2f;
+  --accent-gold-gradient-start: #6f5423;
+  --accent-gold-gradient-end: #7c5d25;
+  --text-espresso: #29251d;
+  --text-espresso-muted: #6b6253;
+  /* Leaderboard metals for podium accents. */
+  --leaderboard-gold: #f59e0b;
+  --leaderboard-silver: #94a3b8;
+  --leaderboard-bronze: #d97706;
+
   /* shadcn/ui semantic tokens, mapped onto the brand palette above, so any
      component added via `npx shadcn add` renders in Cobalt & Blush rather
-     than shadcn's default neutral greys. */
+     than shadcn's default neutral greys. Declared once, last, so nothing
+     downstream can silently override it. */
   --background: var(--bg-cobalt);
   --foreground: var(--text-blush);
   --card: var(--bg-cobalt);

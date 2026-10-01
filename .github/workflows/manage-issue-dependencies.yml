@@ -1,0 +1,175 @@
+name: Manage Issue Dependencies
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened]
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  sync-dependencies:
+    name: Sync Blocked Status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Evaluate Issue Dependencies
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // 1. Load dependencies from .github/issue-dependencies.json
+            let configDeps = {};
+            const configPath = path.join(process.env.GITHUB_WORKSPACE || '.', '.github', 'issue-dependencies.json');
+            if (fs.existsSync(configPath)) {
+              try {
+                const configContent = fs.readFileSync(configPath, 'utf8');
+                const parsed = JSON.parse(configContent);
+                configDeps = parsed.dependencies || {};
+                console.log('Loaded dependencies configuration:', JSON.stringify(configDeps));
+              } catch (err) {
+                console.error('Failed to parse .github/issue-dependencies.json:', err);
+              }
+            }
+
+            // Helper to fetch an issue status safely
+            const issueCache = new Map();
+            async function getIssue(issueNum) {
+              if (issueCache.has(issueNum)) return issueCache.get(issueNum);
+              try {
+                const { data } = await github.rest.issues.get({
+                  owner,
+                  repo,
+                  issue_number: issueNum,
+                });
+                issueCache.set(issueNum, data);
+                return data;
+              } catch (e) {
+                console.warn(`Could not fetch issue #${issueNum}: ${e.message}`);
+                return null;
+              }
+            }
+
+            // Helper to check if an issue has a specific label
+            function hasLabel(issue, labelName) {
+              return (issue.labels || []).some(l => (typeof l === 'string' ? l : l.name).toLowerCase() === labelName.toLowerCase());
+            }
+
+            // 2. Scan open issues for inline markdown blockers (e.g. "Blocked by #45" or "- **Blockers**: #45")
+            try {
+              const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+                owner,
+                repo,
+                state: 'open',
+                per_page: 100,
+              });
+
+              for (const issue of openIssues) {
+                if (issue.pull_request) continue;
+                issueCache.set(issue.number, issue);
+
+                if (!issue.body) continue;
+                const matches = issue.body.match(/(?:blocked by|depends on|blockers?:\s*)\s*#(\d+)/gi);
+                if (matches) {
+                  const issueNumStr = String(issue.number);
+                  if (!configDeps[issueNumStr]) {
+                    configDeps[issueNumStr] = [];
+                  }
+                  for (const match of matches) {
+                    const numMatch = match.match(/#(\d+)/);
+                    if (numMatch) {
+                      const blockerNum = parseInt(numMatch[1], 10);
+                      if (!configDeps[issueNumStr].includes(blockerNum)) {
+                        configDeps[issueNumStr].push(blockerNum);
+                      }
+                    }
+                  }
+                }
+              }
+            } catch (err) {
+              console.warn('Could not paginate all open issues, proceeding with configDeps:', err.message);
+            }
+
+            console.log('Active dependency map to evaluate:', JSON.stringify(configDeps));
+
+            // 3. Evaluate each tracked issue
+            for (const [targetStr, blockers] of Object.entries(configDeps)) {
+              const targetNumber = parseInt(targetStr, 10);
+              const targetIssue = await getIssue(targetNumber);
+
+              if (!targetIssue) {
+                console.log(`Skipping #${targetNumber} (not found)`);
+                continue;
+              }
+
+              // Skip closed issues
+              if (targetIssue.state === 'closed') {
+                console.log(`Skipping #${targetNumber} (already closed)`);
+                continue;
+              }
+
+              const openBlockers = [];
+              for (const blockerNum of blockers) {
+                const blocker = await getIssue(blockerNum);
+                if (!blocker || blocker.state === 'open') {
+                  openBlockers.push(blockerNum);
+                }
+              }
+
+              const currentlyBlocked = hasLabel(targetIssue, 'blocked');
+
+              if (openBlockers.length > 0) {
+                // Issue IS blocked
+                console.log(`Issue #${targetNumber} is BLOCKED by: #${openBlockers.join(', #')}`);
+                if (!currentlyBlocked) {
+                  console.log(`Adding 'blocked' label to #${targetNumber}`);
+                  await github.rest.issues.addLabels({
+                    owner,
+                    repo,
+                    issue_number: targetNumber,
+                    labels: ['blocked'],
+                  });
+                }
+              } else {
+                // Issue is UNBLOCKED (all blockers are closed)
+                console.log(`Issue #${targetNumber} has ALL blockers resolved!`);
+                if (currentlyBlocked) {
+                  console.log(`Removing 'blocked' label from #${targetNumber}`);
+                  try {
+                    await github.rest.issues.removeLabel({
+                      owner,
+                      repo,
+                      issue_number: targetNumber,
+                      name: 'blocked',
+                    });
+                  } catch (err) {
+                    console.warn(`Could not remove label from #${targetNumber}: ${err.message}`);
+                  }
+
+                  // Post an announcement comment
+                  const resolvedText = blockers.map(b => `#${b}`).join(', ');
+                  const unblockMessage = `🎉 **All blocking issues (${resolvedText}) have been resolved!**\n\nThis issue is now unblocked and ready to be assigned to a contributor.`;
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: targetNumber,
+                    body: unblockMessage,
+                  });
+                  console.log(`Posted unblock comment to #${targetNumber}`);
+                }
+              }
+            }
