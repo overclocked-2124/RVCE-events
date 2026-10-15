@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package in.rvce.events.identity.v1;
+
+import "models/user.proto";
+
+option java_multiple_files = true;
+option java_package = "in.rvce.events.identity.v1";
+
+message SyncUserSessionRequest {
+  string token = 1;
+}
+
+message SyncUserSessionResponse {
+  in.rvce.events.models.User user = 1;
+}
+
+message UpdateStudentProfileRequest {
+  string usn = 1;
+  in.rvce.events.models.Department department = 2;
+  int32 graduation_year = 3;
+  string phone = 4;
+}
+
+message UpdateStudentProfileResponse {
+  in.rvce.events.models.User user = 1;
+}
+
+message GetUserProfileRequest {
+  string user_id = 1;
+}
+
+message GetUserProfileResponse {
+  in.rvce.events.models.User user = 1;
+}

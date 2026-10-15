@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package in.rvce.events.v1;
+
+import "identity.proto";
+
+option java_multiple_files = true;
+option java_package = "in.rvce.events.v1";
+
+service BackendService {
+  rpc SyncUserSession(in.rvce.events.identity.v1.SyncUserSessionRequest) returns (in.rvce.events.identity.v1.SyncUserSessionResponse);
+  rpc UpdateStudentProfile(in.rvce.events.identity.v1.UpdateStudentProfileRequest) returns (in.rvce.events.identity.v1.UpdateStudentProfileResponse);
+  rpc GetUserProfile(in.rvce.events.identity.v1.GetUserProfileRequest) returns (in.rvce.events.identity.v1.GetUserProfileResponse);
+}
